@@ -1,0 +1,259 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand: #0284c7;
+  --color-brand-hover: #0369a1;
+  --color-brand-light: rgba(2, 132, 199, 0.08);
+  --color-brand-tint: #e0f2fe;
+  --color-brand-dark: #0c1a2e;
+  --color-brand-dark-bg: #071424;
+  --color-brand-dark-elevated: #122338;
+
+  --shadow-gform: 0 2px 4px 0 rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  --shadow-gform-active: 0 4px 12px 0 rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.04);
+
+  --color-accent-rose: #e91e63;
+}
+
+/* Base Styles */
+body {
+  background-color: var(--color-brand-tint);
+  color: #202124;
+  font-family: 'Outfit', 'Google Sans', 'Roboto', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark {
+  background-color: var(--color-brand-dark-bg);
+  color: #f8fafc;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+body.dark ::-webkit-scrollbar-track {
+  background: #0c1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+body.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Custom switch slider for Required toggle */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+body.dark .slider {
+  background-color: #475569;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked+.slider {
+  background-color: var(--color-brand);
+}
+
+body.dark input:checked+.slider {
+  background-color: #38bdf8;
+}
+
+input:checked+.slider:before {
+  transform: translateX(16px);
+}
+
+/* Drag and Drop visual feedback styles */
+.drag-card-active {
+  opacity: 0.4;
+  border: 2px dashed var(--color-brand) !important;
+  transform: scale(0.98);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.drag-over-indicator {
+  border-top: 3px solid var(--color-brand) !important;
+  padding-top: 8px !important;
+  transition: all 0.2s ease;
+}
+
+.drag-handle-grip {
+  cursor: grab;
+}
+
+.drag-handle-grip:active {
+  cursor: grabbing;
+}
+
+/* Transitions */
+.transition-gform {
+  transition: border 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* Sheets Table custom elements */
+.sheets-grid-wrapper {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+body.dark .sheets-grid-wrapper {
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+.sheets-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+.sheets-table th {
+  background-color: #f8fafc;
+  color: #0486cc;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+body.dark .sheets-table th {
+  background-color: #0c1a2e;
+  color: #38bdf8;
+  border-bottom-color: #1e3a5f;
+}
+
+.sheets-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.dark .sheets-table td {
+  border-bottom-color: #334155;
+  color: #cbd5e1;
+}
+
+.sheets-table tr:hover {
+  background-color: #f1f5f9;
+}
+
+body.dark .sheets-table tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.sheets-table tr.editing {
+  background-color: rgba(2, 132, 199, 0.05);
+}
+
+.sheets-cell-input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 13px;
+  background-color: white;
+}
+
+body.dark .sheets-cell-input {
+  border-color: #1e3a5f;
+  background-color: #122338;
+  color: white;
+}
+
+.sheets-cell-input:focus {
+  outline: none;
+  border-color: var(--color-brand);
+}
+
+/* Form Styles */
+.gform-input-focus {
+  border-bottom: 1px solid #e2e8f0;
+  transition: border-color 0.2s ease;
+}
+
+.gform-input-focus:focus {
+  outline: none;
+  border-bottom: 2px solid var(--color-brand);
+}
+
+body.dark .gform-input-focus {
+  border-bottom-color: #475569;
+}
+
+body.dark .gform-input-focus:focus {
+  border-bottom-color: #38bdf8;
+}
+
+/* Custom FadeIn Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
