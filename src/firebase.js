@@ -357,7 +357,7 @@ export const getIsFirebaseConfigured = () => {
 
 export const getNetworkIp = async () => {
   try {
-    const res = await fetch(`http://localhost:5000/api/network-ip`);
+    const res = await fetch(`${API_URL}/network-ip`);
     const data = await res.json();
     return data.ip;
   } catch (err) {
