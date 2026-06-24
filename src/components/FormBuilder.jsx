@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Trash2, 
   PlusCircle, 
@@ -343,8 +343,29 @@ export default function FormBuilder({
                     </div>
                   ) : (
                     /* Specific placeholder updates for new fields */
-                    <div className="text-xs text-slate-400 dark:text-slate-500 italic ml-2 border-b border-dashed border-slate-200 dark:border-slate-800 pb-2.5 max-w-[200px] font-medium">
-                      {field.type === 'date' && 'Date Selector Output'}
+                    <div className="text-xs text-slate-400 dark:text-slate-500 italic ml-2 border-b border-dashed border-slate-200 dark:border-slate-800 pb-2.5 max-w-[280px] font-medium">
+                      {field.type === 'date' && (
+                        <div className="flex flex-col gap-2 mt-2 not-italic">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-slate-400">Min Date Limit</span>
+                            <input
+                              type="date"
+                              value={field.minDate || ''}
+                              onChange={(e) => updateField(field.id, { minDate: e.target.value })}
+                              className="border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-brand-dark-elevated text-slate-800 dark:text-slate-100 px-2 py-1 rounded-xl text-xs font-semibold focus:outline-none"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[9px] font-black uppercase text-slate-400">Max Date Limit</span>
+                            <input
+                              type="date"
+                              value={field.maxDate || ''}
+                              onChange={(e) => updateField(field.id, { maxDate: e.target.value })}
+                              className="border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-brand-dark-elevated text-slate-800 dark:text-slate-100 px-2 py-1 rounded-xl text-xs font-semibold focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
                       {field.type === 'number' && 'Numerical Response'}
                       {field.type === 'email' && 'Valid Email Address Response'}
                       {field.type === 'phone' && 'Formatted Telephonic Response'}
@@ -413,7 +434,18 @@ export default function FormBuilder({
                     </div>
                   ) : (
                     <div className="text-[11px] text-slate-400 dark:text-slate-500 italic ml-5 mt-0.5">
-                      {field.type === 'date' && 'Date selector input'}
+                      {field.type === 'date' && (
+                        <span>
+                          Date selector input
+                          {(field.minDate || field.maxDate) && (
+                            <span className="block text-[9px] text-slate-400 font-extrabold not-italic uppercase tracking-wider mt-1">
+                              {field.minDate ? `Min: ${field.minDate}` : ''}
+                              {field.minDate && field.maxDate ? ' · ' : ''}
+                              {field.maxDate ? `Max: ${field.maxDate}` : ''}
+                            </span>
+                          )}
+                        </span>
+                      )}
                       {field.type === 'number' && 'Numerical response entry'}
                       {field.type === 'email' && 'Email validation input'}
                       {field.type === 'phone' && 'Phone number formatting input'}

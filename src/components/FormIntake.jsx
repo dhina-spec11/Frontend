@@ -165,6 +165,16 @@ export default function FormIntake({
           newErrors[field.id] = 'Must be a valid phone number (min 7 digits)';
         }
       }
+
+      // Date limits check
+      if (field.type === 'date' && val) {
+        if (field.minDate && val < field.minDate) {
+          newErrors[field.id] = `Date must be on or after ${field.minDate}`;
+        }
+        if (field.maxDate && val > field.maxDate) {
+          newErrors[field.id] = `Date must be on or before ${field.maxDate}`;
+        }
+      }
     });
 
     setErrors(newErrors);
@@ -360,6 +370,8 @@ export default function FormIntake({
                   <input
                     id={`input-${field.id}`}
                     type="date"
+                    min={field.minDate}
+                    max={field.maxDate}
                     value={val || ''}
                     onChange={(e) => handleInputChange(field.id, e.target.value)}
                     className="w-full pl-7 text-xs bg-transparent border-b border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 focus:border-brand dark:focus:border-sky-400 focus:outline-none pb-2 transition-all cursor-pointer font-semibold"
