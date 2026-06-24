@@ -41,8 +41,14 @@ if (isFirebaseConfigured) {
   console.log("Firebase config keys are missing in .env. Running on local-storage mock database mode.");
 }
 
-// Simulated LocalStorage / MySQL Database API Helper
-const API_URL = import.meta.env.VITE_API_URL;
+const getApiUrl = () => {
+  const envUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  if (envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+    return envUrl.replace('localhost', window.location.hostname).replace('127.0.0.1', window.location.hostname);
+  }
+  return envUrl;
+};
+const API_URL = getApiUrl();
 
 const mockAuth = {
   signIn: async (email, password) => {
