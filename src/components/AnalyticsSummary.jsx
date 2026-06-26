@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { BarChart3, Database, AlertCircle, Calendar, Mail, Phone, FileText } from 'lucide-react';
 
 export default function AnalyticsSummary({ formFields, submissions }) {
@@ -80,7 +80,7 @@ export default function AnalyticsSummary({ formFields, submissions }) {
       
       {/* Top Summary Card */}
       <div className="glass-card rounded-2xl p-6 flex items-center gap-4 border border-slate-200 dark:border-slate-800">
-        <div className="w-12 h-12 bg-brand/10 dark:bg-sky-950/20 text-brand dark:text-sky-400 rounded-xl flex items-center justify-center">
+        <div className="w-12 h-12 bg-brand/10 dark:bg-brand/20 text-brand rounded-xl flex items-center justify-center">
           <Database size={24} />
         </div>
         <div>
@@ -218,7 +218,7 @@ export default function AnalyticsSummary({ formFields, submissions }) {
                     <div className="flex flex-col gap-2 max-h-48 overflow-y-auto mt-1 pr-1">
                       {dates.map((dt, idx) => (
                         <div key={idx} className="flex items-center gap-2.5 text-xs bg-slate-50/70 dark:bg-brand-dark-elevated/20 border border-slate-200/50 dark:border-slate-800 p-3 rounded-xl text-slate-700 dark:text-slate-300 font-bold">
-                          <Calendar size={13} className="text-brand dark:text-sky-400 flex-shrink-0" />
+                          <Calendar size={13} className="text-brand flex-shrink-0" />
                           <span>{new Date(dt).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
                         </div>
                       ))}

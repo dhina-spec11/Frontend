@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Routes, 
-  Route, 
-  Navigate, 
-  useNavigate, 
-  useParams, 
-  useSearchParams, 
-  Link 
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useParams,
+  useSearchParams,
+  Link
 } from 'react-router-dom';
-import { 
-  Eye, 
-  Edit3, 
-  Moon, 
-  Sun, 
-  FileSpreadsheet, 
-  BarChart3, 
+import {
+  Eye,
+  Edit3,
+  Moon,
+  Sun,
+  FileSpreadsheet,
+  BarChart3,
   Database,
   ArrowLeft,
   ClipboardCheck,
@@ -53,14 +53,14 @@ import ResponsesSheet from './components/ResponsesSheet';
 import AnalyticsSummary from './components/AnalyticsSummary';
 import Auth from './components/Auth';
 import SettingsSidebar from './components/SettingsSidebar';
-import { 
-  saveForm, 
-  getForm, 
-  submitResponse, 
-  getResponses, 
-  getAllForms, 
-  deleteForm, 
-  subscribeToAuth, 
+import {
+  saveForm,
+  getForm,
+  submitResponse,
+  getResponses,
+  getAllForms,
+  deleteForm,
+  subscribeToAuth,
   logOutUser,
   addCollaborator,
   removeCollaborator,
@@ -79,9 +79,9 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('formstudio_theme', theme);
     if (theme === 'dark') {
-      document.body.classList.add('dark');
+      document.documentElement.classList.add('dark');
     } else {
-      document.body.classList.remove('dark');
+      document.documentElement.classList.remove('dark');
     }
   }, [theme]);
 
@@ -97,7 +97,7 @@ export default function App() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg flex flex-col items-center justify-center gap-4">
-        <div className="w-12 h-12 border-4 border-brand border-t-transparent dark:border-sky-400 rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-brand border-t-transparent dark:border-brand rounded-full animate-spin" />
         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 tracking-wider">
           Initializing secure workspace sessions...
         </span>
@@ -132,11 +132,10 @@ export default function App() {
 function Toast({ message, visible, isError }) {
   if (!visible) return null;
   return (
-    <div className={`fixed bottom-6 left-6 text-white text-xs px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-2.5 animate-fade-in border ${
-      isError 
-        ? 'bg-red-600/90 border-red-500 backdrop-blur-md' 
+    <div className={`fixed bottom-6 left-6 text-white text-xs px-5 py-3 rounded-2xl shadow-xl z-50 flex items-center gap-2.5 animate-fade-in border ${isError
+        ? 'bg-red-600/90 border-red-500 backdrop-blur-md'
         : 'bg-slate-900/95 dark:bg-brand-dark-elevated/95 border-slate-800 dark:border-slate-700 backdrop-blur-md'
-    }`}>
+      }`}>
       {isError ? (
         <Info size={14} className="text-red-200" />
       ) : (
@@ -200,7 +199,7 @@ function DashboardPage({ user, theme, setTheme }) {
       { id: `field-name`, label: 'Full Name', type: 'text', required: true, placeholder: 'e.g. John Doe' },
       { id: `field-email`, label: 'Email Address', type: 'email', required: true, placeholder: 'e.g. john@example.com' }
     ];
-    
+
     try {
       await saveForm(newFormId, defaultFields, 'Untitled Form', 'Provide form details below.', 'draft', user.uid);
       triggerToast('New blank form draft created.');
@@ -289,10 +288,10 @@ function DashboardPage({ user, theme, setTheme }) {
 
   return (
     <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-300">
-      
+
       {/* Dashboard Header */}
       <header className="bg-white/70 dark:bg-brand-dark/70 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/50 sticky top-0 z-30 shadow-sm transition-colors duration-300">
-        <div className="w-[95%] max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-600 to-brand flex items-center justify-center text-white font-extrabold shadow-md shadow-brand/10">
               <ClipboardCheck size={20} />
@@ -381,29 +380,34 @@ function DashboardPage({ user, theme, setTheme }) {
       </header>
 
       {/* Main Container */}
-      <main className="w-[95%] max-w-screen-2xl mx-auto py-8 px-2 sm:px-4 flex flex-col gap-8">
-        
-        {/* Glassmorphic Hero Area */}
-        <div className="relative rounded-3xl overflow-hidden bg-gradient-to-tr from-brand-dark-bg via-brand-dark to-slate-900 text-white p-6 md:p-10 shadow-2xl border border-white/5">
-          <div className="absolute right-0 bottom-0 opacity-15 transform translate-x-12 translate-y-12 select-none pointer-events-none">
+      <main className="w-[98%] max-w-[1920px] mx-auto py-8 px-2 sm:px-4 flex flex-col gap-8">
+
+        {/* Premium Dashboard Hero Area */}
+        <div className="relative rounded-3xl overflow-hidden bg-slate-950 dark:bg-slate-900/60 text-white p-8 md:p-12 shadow-2xl border border-slate-800/80 dark:border-slate-800/50">
+          {/* Decorative ambient color blobs for premium SaaS style */}
+          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none select-none" />
+          <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none select-none" />
+
+          <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-16 translate-y-16 select-none pointer-events-none text-slate-800 dark:text-slate-700">
             <ClipboardCheck size={360} />
           </div>
+
           <div className="relative z-10 max-w-2xl">
-            <span className="bg-sky-900/50 text-sky-300 text-[9px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border border-sky-500/20 backdrop-blur-xs">
+            <span className="bg-brand/10 text-brand dark:text-blue-400 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border border-brand/20 backdrop-blur-xs">
               SaaS Engine Core
             </span>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-5 leading-tight">
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-6 leading-tight text-white">
               Design and publish premium web forms instantly
             </h1>
-            <p className="text-slate-300 text-xs md:text-sm mt-3 leading-relaxed font-medium">
+            <p className="text-slate-400 text-xs md:text-sm mt-3.5 leading-relaxed font-medium max-w-lg">
               Create interactive surveys, log client databases with robust file uploads, view detailed analytics, and export spreadsheet ledgers.
             </p>
             <div className="flex flex-wrap gap-4 mt-8">
               <button
                 onClick={handleCreateNewForm}
-                className="bg-white text-slate-900 hover:bg-slate-50 px-6 py-3 rounded-xl text-xs font-extrabold transition duration-200 flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
+                className="bg-brand hover:bg-brand-hover text-white px-6 py-3.5 rounded-xl text-xs font-extrabold transition duration-200 flex items-center gap-2 shadow-lg hover:scale-103 cursor-pointer"
               >
-                <PlusCircle size={16} className="text-brand" />
+                <PlusCircle size={15} />
                 <span>Create Blank Form</span>
               </button>
             </div>
@@ -451,7 +455,7 @@ function DashboardPage({ user, theme, setTheme }) {
               </h2>
               <p className="text-xs text-slate-400 mt-0.5 font-medium">Search, modify, or inspect form submission analytics.</p>
             </div>
-            
+
             <div className="relative w-full sm:w-80">
               <input
                 type="text"
@@ -503,21 +507,20 @@ function DashboardPage({ user, theme, setTheme }) {
                           <Database size={10} />
                           <span>{form.responseCount || 0} Submissions</span>
                         </span>
-                        
+
                         {/* Status tag */}
-                        <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full ${
-                          form.status === 'published' 
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
+                        <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full ${form.status === 'published'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                             : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}>
+                          }`}>
                           {form.status || 'draft'}
                         </span>
                       </div>
-                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-sky-400 transition-colors line-clamp-1">
+                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand transition-colors line-clamp-1">
                         {form.title}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
-                        {form.description || 'No summary configured.'}
+                        {form.description ? form.description.split('|||')[0] : 'No summary configured.'}
                       </p>
                     </div>
 
@@ -538,7 +541,7 @@ function DashboardPage({ user, theme, setTheme }) {
                           <ExternalLink size={13} />
                         </Link>
                       </div>
-                      
+
                       <div className="flex items-center gap-1">
                         <button
                           onClick={(e) => handleDeleteForm(form.id, e)}
@@ -583,23 +586,60 @@ function FormWorkspacePage({ user, theme, setTheme }) {
   // Tab: 'builder' | 'responses'
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'builder');
   const [responseSubView, setResponseSubView] = useState('sheet'); // 'sheet' | 'analytics'
-  
+
   // Data schema state
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formFields, setFormFields] = useState([]);
+  const [formTheme, setFormTheme] = useState({ theme: 'glassmorphism', font: 'Outfit', accent: 'brand' });
   const [formStatus, setFormStatus] = useState('draft'); // 'draft' | 'published'
   const [submissions, setSubmissions] = useState([]);
-  
+
   // Loader & Save state
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'saved' | 'error'
-  
+
   // Modals & Panels
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'mobile'
+  const [previewDevice, setPreviewDevice] = useState('desktop'); // 'desktop' | 'tablet' | 'mobile'
+  const [previewZoom, setPreviewZoom] = useState(1);
+  const [previewWidth, setPreviewWidth] = useState(480);
+
+  const isResizingRef = useRef(false);
+
+  const startResizing = (e) => {
+    e.preventDefault();
+    isResizingRef.current = true;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isResizingRef.current) return;
+    const newWidth = window.innerWidth - e.clientX - 48;
+    if (newWidth > 340 && newWidth < 800) {
+      setPreviewWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    isResizingRef.current = false;
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.removeEventListener('mouseup', handleMouseUp);
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  };
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   const [toast, setToast] = useState({ message: '', visible: false, isError: false });
 
@@ -617,7 +657,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
         navigate('/');
         return;
       }
-      
+
       // Ensure ownership check
       if (form.ownerUid && form.ownerUid !== user.uid) {
         triggerToast("Access Denied: You do not own this form workspace.", true);
@@ -625,11 +665,24 @@ function FormWorkspacePage({ user, theme, setTheme }) {
         return;
       }
 
+      let descText = form.description || '';
+      let themeConfig = { theme: 'glassmorphism', font: 'Outfit', accent: 'brand' };
+      if (descText.includes('|||')) {
+        const parts = descText.split('|||');
+        descText = parts[0];
+        try {
+          themeConfig = JSON.parse(parts[1]);
+        } catch (e) {
+          console.error("Failed to parse theme:", e);
+        }
+      }
+
       setFormTitle(form.title || 'Untitled Form');
-      setFormDescription(form.description || '');
+      setFormDescription(descText);
+      setFormTheme(themeConfig);
       setFormFields(form.fields || []);
       setFormStatus(form.status || 'draft');
-      
+
       // Responses
       const resp = await getResponses(formId);
       setSubmissions(resp.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)));
@@ -654,16 +707,17 @@ function FormWorkspacePage({ user, theme, setTheme }) {
       isFirstMount.current = false;
       return;
     }
-    
+
     setSaveStatus('saving');
-    
+
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
     }
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await saveForm(formId, formFields, formTitle, formDescription, formStatus, user.uid);
+        const serializedDesc = `${formDescription}|||${JSON.stringify(formTheme)}`;
+        await saveForm(formId, formFields, formTitle, serializedDesc, formStatus, user.uid);
         setSaveStatus('saved');
         // Reset saveStatus back to idle after a brief showing
         setTimeout(() => setSaveStatus(curr => curr === 'saved' ? 'idle' : curr), 3000);
@@ -682,7 +736,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     };
-  }, [formTitle, formDescription, formFields, formStatus]);
+  }, [formTitle, formDescription, formFields, formStatus, formTheme]);
 
   // Reset isFirstMount on ID switch
   useEffect(() => {
@@ -704,7 +758,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
     try {
       await submitResponse(formId, payload);
       triggerToast("Response saved directly to database!");
-      
+
       // Refresh responses ledger immediately
       const resp = await getResponses(formId);
       setSubmissions(resp.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt)));
@@ -770,7 +824,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent dark:border-sky-400 rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent dark:border-brand rounded-full animate-spin" />
         <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Loading form configuration workspace...</span>
       </div>
     );
@@ -778,11 +832,11 @@ function FormWorkspacePage({ user, theme, setTheme }) {
 
   return (
     <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 transition-colors duration-300 pb-12 flex flex-col">
-      
+
       {/* Workspace Subheader */}
       <header className="bg-white/75 dark:bg-brand-dark/75 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-30 shadow-sm flex-shrink-0 transition-all">
-        <div className="w-[95%] max-w-screen-2xl mx-auto px-2 py-3 flex items-center justify-between">
-          
+        <div className="w-[98%] max-w-[1920px] mx-auto px-2 py-3 flex items-center justify-between">
+
           {/* Back & Title */}
           <div className="flex items-center gap-3">
             <Link
@@ -802,21 +856,19 @@ function FormWorkspacePage({ user, theme, setTheme }) {
           <div className="flex p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/30">
             <button
               onClick={() => setActiveTab('builder')}
-              className={`px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                activeTab === 'builder' 
-                  ? 'bg-brand text-white shadow-sm dark:bg-sky-600' 
+              className={`px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'builder'
+                  ? 'bg-brand text-white shadow-sm'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
+                }`}
             >
               Builder Setup
             </button>
             <button
               onClick={() => setActiveTab('responses')}
-              className={`px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                activeTab === 'responses' 
-                  ? 'bg-brand text-white shadow-sm dark:bg-sky-600' 
+              className={`px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${activeTab === 'responses'
+                  ? 'bg-brand text-white shadow-sm'
                   : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
-              }`}
+                }`}
             >
               <span>Responses</span>
               <span className="px-1.5 py-0.5 rounded-full bg-slate-200/50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
@@ -827,12 +879,12 @@ function FormWorkspacePage({ user, theme, setTheme }) {
 
           {/* Save Status / Live Status & Publish Toggle */}
           <div className="flex items-center gap-3">
-            
+
             {/* Auto Save Sync Icon */}
             <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 mr-2">
               {saveStatus === 'saving' && (
                 <>
-                  <CloudLightning size={14} className="text-brand dark:text-sky-400 animate-bounce" />
+                  <CloudLightning size={14} className="text-brand animate-bounce" />
                   <span className="animate-pulse">Saving...</span>
                 </>
               )}
@@ -876,7 +928,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
 
             <button
               onClick={() => setIsShareOpen(true)}
-              className="flex items-center gap-1 px-3 py-1.5 bg-brand dark:bg-sky-600 hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-md shadow-brand/10 transition cursor-pointer"
+              className="flex items-center gap-1 px-3 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-md shadow-brand/10 transition cursor-pointer"
             >
               <Share2 size={13} />
               <span>Share</span>
@@ -903,14 +955,14 @@ function FormWorkspacePage({ user, theme, setTheme }) {
       </header>
 
       {/* Main Workspace Frame */}
-      <div className="flex-1 w-[95%] max-w-screen-2xl mx-auto px-2 py-6 flex flex-col gap-6">
-        
+      <div className="flex-1 w-[98%] max-w-[1920px] mx-auto px-2 py-6 flex flex-col gap-6">
+
         {/* TABS 1: BUILDER SETUP & PREVIEW DUAL-PANE */}
         {activeTab === 'builder' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1 items-start">
-            
-            {/* Left Panel: Builder fields config (7 cols) */}
-            <div className="lg:col-span-7 flex flex-col gap-6">
+          <div className="flex flex-col lg:flex-row gap-6 flex-1 items-stretch w-full">
+
+            {/* Left Panel: Builder fields config */}
+            <div className="flex-1 min-w-0 flex flex-col gap-6">
               <FormBuilder
                 formFields={formFields}
                 setFormFields={setFormFields}
@@ -918,27 +970,170 @@ function FormWorkspacePage({ user, theme, setTheme }) {
                 setFormTitle={setFormTitle}
                 formDescription={formDescription}
                 setFormDescription={setFormDescription}
+                formTheme={formTheme}
+                setFormTheme={setFormTheme}
                 onSave={() => triggerToast("Form structure saved explicitly.")}
                 isSaving={saveStatus === 'saving'}
                 loadTemplate={handleLoadTemplate}
               />
             </div>
 
-            {/* Right Panel: Clean Live Preview (5 cols) */}
-            <div className="lg:col-span-5 lg:sticky lg:top-24 flex flex-col items-center w-full max-w-[580px]">
-              
-              <div className="w-full bg-white dark:bg-brand-dark border border-slate-200/60 dark:border-slate-800 rounded-3xl p-6 shadow-sm">
-                <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
-                  Interactive Preview
+            {/* Drag Resizer Line (Desktop only) */}
+            <div
+              onMouseDown={startResizing}
+              className="hidden lg:flex w-2 cursor-col-resize self-stretch items-center justify-center group select-none transition-all flex-shrink-0"
+              title="Drag to resize preview panel"
+            >
+              <div className="w-0.5 h-1/2 bg-slate-200 dark:bg-slate-800 rounded-full group-hover:bg-brand transition-colors" />
+            </div>
+
+            {/* Right Panel: Live Device Preview Simulator */}
+            <div
+              style={{ width: window.innerWidth >= 1024 ? `${previewWidth}px` : '100%' }}
+              className="flex-shrink-0 flex flex-col items-center gap-4 lg:sticky lg:top-24 max-w-full transition-[width] duration-75 animate-fade-in"
+            >
+              <div className="w-full flex items-center justify-between border-b border-slate-200/50 dark:border-slate-800/80 pb-3">
+                {/* Device Type Selectors */}
+                <div className="flex items-center gap-1 p-0.5 bg-slate-100 dark:bg-slate-850 rounded-xl">
+                  {[
+                    { id: 'desktop', icon: <Monitor size={13} />, label: 'Desktop' },
+                    { id: 'tablet', icon: <Smartphone className="rotate-90" size={13} />, label: 'Tablet' },
+                    { id: 'mobile', icon: <Smartphone size={13} />, label: 'Mobile' }
+                  ].map(d => (
+                    <button
+                      key={d.id}
+                      onClick={() => setPreviewDevice(d.id)}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-tight transition-all cursor-pointer ${previewDevice === d.id
+                          ? 'bg-white dark:bg-slate-900 text-brand shadow-xs font-extrabold'
+                          : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                        }`}
+                      title={d.label}
+                    >
+                      {d.icon}
+                      <span className="hidden sm:inline">{d.label}</span>
+                    </button>
+                  ))}
                 </div>
-                <FormIntake
-                  formTitle={formTitle}
-                  formDescription={formDescription}
-                  formFields={formFields}
-                  onSubmit={handlePreviewSubmit}
-                  isSubmitting={false}
-                  isPreview={false}
-                />
+
+                {/* Zoom Controls */}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPreviewZoom(z => Math.max(0.75, z - 0.1))}
+                    disabled={previewZoom <= 0.75}
+                    className="w-7 h-7 flex items-center justify-center border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-30 cursor-pointer text-xs font-bold"
+                    title="Zoom Out"
+                  >
+                    -
+                  </button>
+                  <button
+                    onClick={() => setPreviewZoom(1.0)}
+                    className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hover:text-brand cursor-pointer px-1"
+                    title="Reset Zoom"
+                  >
+                    {Math.round(previewZoom * 100)}%
+                  </button>
+                  <button
+                    onClick={() => setPreviewZoom(z => Math.min(1.25, z + 0.1))}
+                    disabled={previewZoom >= 1.25}
+                    className="w-7 h-7 flex items-center justify-center border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60 disabled:opacity-30 cursor-pointer text-xs font-bold"
+                    title="Zoom In"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Simulator Outer Bezel Wrapper */}
+              <div className="w-full flex justify-center items-start overflow-hidden py-2">
+
+                <div
+                  style={{
+                    transform: `scale(${previewZoom})`,
+                    transformOrigin: 'top center',
+                    width: previewDevice === 'mobile' ? '320px' : previewDevice === 'tablet' ? '480px' : '100%',
+                    transition: 'width 0.3s ease, transform 0.2s ease'
+                  }}
+                  className="flex-shrink-0"
+                >
+
+                  {/* MOBILE SIMULATOR */}
+                  {previewDevice === 'mobile' && (
+                    <div className="w-full bg-slate-950 dark:bg-slate-900 border-[10px] border-slate-950 dark:border-slate-900 rounded-[38px] shadow-2xl overflow-hidden relative">
+                      {/* Speaker and Camera punch */}
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 h-[22px] w-[110px] bg-slate-950 dark:bg-slate-900 rounded-b-2xl z-30 flex items-center justify-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-slate-800 rounded-full" />
+                        <div className="w-10 h-1 bg-slate-800 rounded-full" />
+                      </div>
+
+                      {/* Screen viewport */}
+                      <div className="bg-slate-50 dark:bg-brand-dark-bg h-[540px] overflow-y-auto scrollbar-thin pt-6 pb-8 px-4 rounded-[28px] relative z-10">
+                        <FormIntake
+                          formTitle={formTitle}
+                          formDescription={formDescription}
+                          formFields={formFields}
+                          onSubmit={handlePreviewSubmit}
+                          isSubmitting={false}
+                          isPreview={true}
+                          themeConfig={formTheme}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TABLET SIMULATOR */}
+                  {previewDevice === 'tablet' && (
+                    <div className="w-full bg-slate-950 dark:bg-slate-900 border-[12px] border-slate-950 dark:border-slate-900 rounded-[28px] shadow-2xl overflow-hidden relative">
+                      {/* Top Camera dot */}
+                      <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-slate-800 rounded-full z-30" />
+
+                      {/* Screen viewport */}
+                      <div className="bg-slate-50 dark:bg-brand-dark-bg h-[600px] overflow-y-auto scrollbar-thin p-6 rounded-[18px] relative z-10">
+                        <FormIntake
+                          formTitle={formTitle}
+                          formDescription={formDescription}
+                          formFields={formFields}
+                          onSubmit={handlePreviewSubmit}
+                          isSubmitting={false}
+                          isPreview={true}
+                          themeConfig={formTheme}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* DESKTOP BROWSER SIMULATOR */}
+                  {previewDevice === 'desktop' && (
+                    <div className="w-full bg-white dark:bg-brand-dark border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                      {/* Browser Title Bar Mockup */}
+                      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-900/60 border-b border-slate-200/60 dark:border-slate-800/80 select-none">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-green-400" />
+                        </div>
+                        {/* Browser address field */}
+                        <div className="bg-slate-100 dark:bg-slate-800 text-[10px] text-slate-400 dark:text-slate-500 font-bold py-1 px-4 rounded-lg w-1/2 text-center truncate">
+                          formstudio.io/form/{formId}
+                        </div>
+                        <div className="w-10" />
+                      </div>
+
+                      {/* Viewport */}
+                      <div className="bg-slate-50 dark:bg-brand-dark-bg h-[620px] overflow-y-auto scrollbar-thin p-8">
+                        <FormIntake
+                          formTitle={formTitle}
+                          formDescription={formDescription}
+                          formFields={formFields}
+                          onSubmit={handlePreviewSubmit}
+                          isSubmitting={false}
+                          isPreview={true}
+                          themeConfig={formTheme}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                </div>
               </div>
 
             </div>
@@ -948,7 +1143,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
         {/* TABS 2: RESPONSES LEDGER */}
         {activeTab === 'responses' && (
           <div className="animate-fade-in flex flex-col gap-6">
-            
+
             {/* Responses controls subheader */}
             <div className="bg-white dark:bg-brand-dark border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-6 shadow-sm transition">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -964,22 +1159,20 @@ function FormWorkspacePage({ user, theme, setTheme }) {
                 <div className="flex p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/30 self-start">
                   <button
                     onClick={() => setResponseSubView('sheet')}
-                    className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      responseSubView === 'sheet'
-                        ? 'bg-brand text-white shadow-sm dark:bg-sky-600'
+                    className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all ${responseSubView === 'sheet'
+                        ? 'bg-brand text-white shadow-sm'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
-                    }`}
+                      }`}
                   >
                     <FileSpreadsheet size={13} />
                     <span>Spreadsheet Grid</span>
                   </button>
                   <button
                     onClick={() => setResponseSubView('analytics')}
-                    className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      responseSubView === 'analytics'
-                        ? 'bg-brand text-white shadow-sm dark:bg-sky-600'
+                    className={`flex items-center gap-1.5 px-4.5 py-1.5 rounded-lg text-xs font-bold transition-all ${responseSubView === 'analytics'
+                        ? 'bg-brand text-white shadow-sm'
                         : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
-                    }`}
+                      }`}
                   >
                     <BarChart3 size={13} />
                     <span>Analytics Overview</span>
@@ -1119,18 +1312,18 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
 
   return (
     <div className="fixed inset-0 z-55 overflow-y-auto flex items-center justify-center p-4">
-      <div 
+      <div
         onClick={onClose}
         className="fixed inset-0 bg-slate-950/60 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity"
       />
 
       <div className="bg-white dark:bg-brand-dark border border-slate-200 dark:border-slate-800 rounded-3xl w-full max-w-xl relative z-10 shadow-2xl overflow-hidden animate-fade-in">
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-500 to-brand" />
-        
+
         {/* Header */}
         <div className="flex justify-between items-start p-7 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand/10 text-brand dark:bg-sky-950/20 dark:text-sky-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-brand/10 text-brand dark:bg-brand/20 flex items-center justify-center">
               <Share2 size={16} />
             </div>
             <div>
@@ -1142,7 +1335,7 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
               </p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full transition cursor-pointer mt-1"
           >
@@ -1153,7 +1346,7 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
         {/* Status badge */}
         <div className="mx-7 bg-slate-50 dark:bg-brand-dark-elevated/30 rounded-xl px-4 py-3 border border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <ClipboardCheck size={14} className="text-brand dark:text-sky-400 flex-shrink-0" />
+            <ClipboardCheck size={14} className="text-brand flex-shrink-0" />
             <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{formTitle}</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -1168,27 +1361,25 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
         <div className="flex mx-7 mt-5 p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/30">
           <button
             onClick={() => setActiveTab('link')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'link'
-                ? 'bg-white dark:bg-brand-dark-elevated text-brand dark:text-sky-400 shadow-sm'
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'link'
+                ? 'bg-white dark:bg-brand-dark-elevated text-brand shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
-            }`}
+              }`}
           >
             <Globe size={12} />
             <span>Public Link &amp; QR</span>
           </button>
           <button
             onClick={() => setActiveTab('collaborators')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              activeTab === 'collaborators'
-                ? 'bg-white dark:bg-brand-dark-elevated text-brand dark:text-sky-400 shadow-sm'
+            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-bold transition-all ${activeTab === 'collaborators'
+                ? 'bg-white dark:bg-brand-dark-elevated text-brand shadow-sm'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
-            }`}
+              }`}
           >
             <Users size={12} />
             <span>Response Access</span>
             {collaborators.length > 0 && (
-              <span className="bg-brand/20 dark:bg-sky-900/40 text-brand dark:text-sky-400 text-[9px] font-black px-1.5 py-0.5 rounded-full">
+              <span className="bg-brand/20 dark:bg-brand/30 text-brand text-[9px] font-black px-1.5 py-0.5 rounded-full">
                 {collaborators.length}
               </span>
             )}
@@ -1204,9 +1395,9 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Shareable URL Link</label>
                 <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    readOnly 
+                  <input
+                    type="text"
+                    readOnly
                     value={getShareUrl()}
                     className="flex-1 text-xs border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-brand-dark-elevated/50 rounded-xl px-3 py-2.5 text-slate-600 dark:text-slate-300 focus:outline-none select-all font-semibold"
                   />
@@ -1223,7 +1414,7 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
               {/* QR Code */}
               <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-50/40 dark:bg-brand-dark-elevated/20 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800">
                 <div className="bg-white p-2.5 rounded-xl border border-slate-200 shadow-sm flex-shrink-0">
-                  <img 
+                  <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(qrUrl)}`}
                     alt="QR Code"
                     width={120}
@@ -1241,7 +1432,7 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
                     href={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrUrl)}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[10px] text-brand dark:text-sky-400 font-black uppercase tracking-wider mt-2 block hover:underline"
+                    className="text-[10px] text-brand font-black uppercase tracking-wider mt-2 block hover:underline"
                   >
                     Download High-Res QR <ExternalLink size={10} className="inline ml-0.5" />
                   </a>
@@ -1251,8 +1442,8 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
               {/* Embed code */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">HTML Embed Snippet</label>
-                <textarea 
-                  readOnly 
+                <textarea
+                  readOnly
                   rows={2}
                   value={getEmbedCode()}
                   className="w-full text-[10px] border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-brand-dark-elevated/50 rounded-xl p-3 text-slate-500 dark:text-slate-400 focus:outline-none font-mono leading-relaxed"
@@ -1271,8 +1462,8 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
           {/* TAB: Collaborators / Response Access */}
           {activeTab === 'collaborators' && (
             <div className="flex flex-col gap-4">
-              <div className="bg-brand/5 dark:bg-sky-950/20 border border-brand/20 dark:border-purple-800/30 rounded-xl p-4 flex gap-3">
-                <ShieldCheck size={16} className="text-brand dark:text-sky-400 flex-shrink-0 mt-0.5" />
+              <div className="bg-brand/5 dark:bg-brand/10 border border-brand/20 dark:border-brand/30 rounded-xl p-4 flex gap-3">
+                <ShieldCheck size={16} className="text-brand flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-xs font-black text-slate-700 dark:text-slate-200">Response Viewer Access</p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
@@ -1371,7 +1562,7 @@ function ShareModal({ formId, formTitle, formStatus, getShareUrl, getEmbedCode, 
 
         {/* Footer */}
         <div className="border-t border-slate-100 dark:border-slate-800 px-7 py-4 flex justify-end">
-          <button 
+          <button
             onClick={onClose}
             className="px-4 py-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:bg-brand-dark-elevated text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer"
           >
@@ -1432,7 +1623,7 @@ function SharedResponsesPage({ user, theme, setTheme }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent dark:border-sky-400 rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent dark:border-brand rounded-full animate-spin" />
         <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Verifying access permissions...</span>
       </div>
     );
@@ -1464,7 +1655,7 @@ function SharedResponsesPage({ user, theme, setTheme }) {
   return (
     <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 transition-colors pb-16">
       <header className="bg-white/70 dark:bg-brand-dark/70 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/50 sticky top-0 z-30 shadow-sm">
-        <div className="w-[95%] max-w-screen-2xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/')}
@@ -1494,11 +1685,11 @@ function SharedResponsesPage({ user, theme, setTheme }) {
         </div>
       </header>
 
-      <main className="w-[95%] max-w-screen-2xl mx-auto py-8 px-2 sm:px-4 flex flex-col gap-6">
+      <main className="w-[98%] max-w-[1920px] mx-auto py-8 px-2 sm:px-4 flex flex-col gap-6">
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total Responses', value: submissions.length, color: 'text-brand dark:text-sky-400' },
+            { label: 'Total Responses', value: submissions.length, color: 'text-brand' },
             { label: 'Form Fields', value: formData?.fields?.length || 0, color: 'text-emerald-600 dark:text-emerald-400' },
             { label: 'Form Status', value: formData?.status || 'draft', color: formData?.status === 'published' ? 'text-emerald-600' : 'text-amber-600' },
             { label: 'Access Role', value: 'Viewer', color: 'text-slate-600 dark:text-slate-400' },
@@ -1513,14 +1704,14 @@ function SharedResponsesPage({ user, theme, setTheme }) {
         {/* Responses table */}
         <div className="bg-white dark:bg-brand-dark p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <FileSpreadsheet size={16} className="text-brand dark:text-sky-400" />
+            <FileSpreadsheet size={16} className="text-brand" />
             <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">Submission Responses</h2>
-            <span className="bg-brand/10 text-brand dark:bg-sky-950/30 dark:text-sky-400 text-[10px] font-black px-2 py-0.5 rounded-full">{submissions.length}</span>
+            <span className="bg-brand/10 text-brand text-[10px] font-black px-2 py-0.5 rounded-full">{submissions.length}</span>
           </div>
           <ResponsesSheet
             formFields={formData?.fields || []}
             submissions={submissions}
-            setSubmissions={() => {}} // Read-only for collaborators
+            setSubmissions={() => { }} // Read-only for collaborators
             readOnly={true}
           />
         </div>
@@ -1528,7 +1719,7 @@ function SharedResponsesPage({ user, theme, setTheme }) {
         {/* Analytics read-only */}
         <div className="bg-white dark:bg-brand-dark p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
-            <BarChart3 size={16} className="text-brand dark:text-sky-400" />
+            <BarChart3 size={16} className="text-brand" />
             <h2 className="text-sm font-black text-slate-800 dark:text-slate-100">Response Analytics</h2>
           </div>
           <AnalyticsSummary
@@ -1555,6 +1746,7 @@ function FormPublicPage({ theme, setTheme, user }) {
   const [ownerUid, setOwnerUid] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formTheme, setFormTheme] = useState({ theme: 'glassmorphism', font: 'Outfit', accent: 'brand' });
   const [toast, setToast] = useState({ message: '', visible: false, isError: false });
 
   const triggerToast = (msg, isError = false) => {
@@ -1566,8 +1758,20 @@ function FormPublicPage({ theme, setTheme, user }) {
     try {
       const form = await getForm(formId);
       if (form) {
+        let descText = form.description || '';
+        let themeConfig = { theme: 'glassmorphism', font: 'Outfit', accent: 'brand' };
+        if (descText.includes('|||')) {
+          const parts = descText.split('|||');
+          descText = parts[0];
+          try {
+            themeConfig = JSON.parse(parts[1]);
+          } catch (e) {
+            console.error("Failed to parse theme:", e);
+          }
+        }
         setFormTitle(form.title || 'Untitled Form');
-        setFormDescription(form.description || '');
+        setFormDescription(descText);
+        setFormTheme(themeConfig);
         setFormFields(form.fields || []);
         setFormStatus(form.status || 'published');
         setOwnerUid(form.ownerUid || null);
@@ -1604,7 +1808,7 @@ function FormPublicPage({ theme, setTheme, user }) {
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg flex flex-col items-center justify-center gap-4">
-        <div className="w-10 h-10 border-4 border-brand border-t-transparent dark:border-sky-400 rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-brand border-t-transparent dark:border-brand rounded-full animate-spin" />
         <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Syncing database schemas...</span>
       </div>
     );
@@ -1620,13 +1824,13 @@ function FormPublicPage({ theme, setTheme, user }) {
       <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg flex items-center justify-center p-6 transition-colors duration-300">
         <div className="max-w-md w-full bg-white dark:bg-brand-dark border border-slate-200 dark:border-slate-800 p-8 rounded-3xl shadow-xl text-center flex flex-col items-center gap-4 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-amber-500" />
-          
+
           <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center mb-1 text-amber-600 dark:text-amber-400">
             <CloudOff size={28} />
           </div>
-          
+
           <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Form Offline (Draft Mode)</h2>
-          
+
           <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
             This form is currently configured in a Draft state by the administrator and cannot record public submissions.
           </p>
@@ -1634,16 +1838,16 @@ function FormPublicPage({ theme, setTheme, user }) {
           <div className="w-full h-px bg-slate-100 dark:bg-slate-800 my-2" />
 
           {user ? (
-            <Link 
+            <Link
               to="/"
-              className="text-xs font-bold text-brand hover:text-brand-hover dark:text-sky-400 hover:underline"
+              className="text-xs font-bold text-brand hover:text-brand-hover hover:underline"
             >
               Return to your Dashboard
             </Link>
           ) : (
-            <Link 
+            <Link
               to="/login"
-              className="px-5 py-2.5 bg-brand dark:bg-sky-600 hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-md cursor-pointer transition"
+              className="px-5 py-2.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-md cursor-pointer transition"
             >
               Sign In to Edit Form
             </Link>
@@ -1655,7 +1859,7 @@ function FormPublicPage({ theme, setTheme, user }) {
 
   return (
     <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col pb-16">
-      
+
       {/* Mini navbar */}
       <header className="bg-white/70 dark:bg-brand-dark/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-30 transition-colors duration-300">
         <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -1668,7 +1872,7 @@ function FormPublicPage({ theme, setTheme, user }) {
 
           <div className="flex items-center gap-3">
             {isOwner && (
-              <Link 
+              <Link
                 to={`/form/${formId}/edit`}
                 className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl cursor-pointer transition flex items-center gap-1"
               >
@@ -1694,13 +1898,14 @@ function FormPublicPage({ theme, setTheme, user }) {
           formFields={formFields}
           onSubmit={handleResponseSubmit}
           isSubmitting={isSubmitting}
+          themeConfig={formTheme}
         />
-        
+
         {/* Footnote powered branding */}
         <div className="text-center mt-12 animate-fade-in">
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-brand dark:text-slate-500 dark:hover:text-sky-400 font-bold transition"
+            className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-brand dark:text-slate-500 dark:hover:text-brand font-bold transition"
           >
             <ClipboardCheck size={13} />
             <span>Powered by FormStudio · Establish your own portal</span>

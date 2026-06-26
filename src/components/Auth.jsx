@@ -274,7 +274,7 @@ export default function Auth() {
                 {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
                 <button
                   onClick={() => switchMode(!isLogin)}
-                  className="text-brand dark:text-sky-400 font-bold hover:underline cursor-pointer"
+                  className="text-brand font-bold hover:underline cursor-pointer"
                 >
                   {isLogin ? 'Sign up free →' : 'Sign in →'}
                 </button>

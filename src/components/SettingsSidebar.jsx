@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import {
   X,
   Moon,
@@ -78,7 +78,7 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
         {/* Sidebar Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-brand/10 dark:bg-sky-900/30 text-brand dark:text-sky-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-brand/10 dark:bg-brand/20 text-brand flex items-center justify-center">
               <Settings2 size={16} />
             </div>
             <div>
@@ -102,7 +102,7 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
               onClick={() => setActiveSection(id)}
               className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer w-full text-left ${
                 activeSection === id
-                  ? 'bg-brand/10 dark:bg-sky-900/25 text-brand dark:text-sky-400'
+                  ? 'bg-brand/10 dark:bg-brand/20 text-brand'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/60'
               } ${id === 'danger' ? '!text-red-500 hover:!bg-red-50 dark:hover:!bg-red-950/20' : ''}`}
             >
@@ -128,7 +128,7 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
                   onClick={() => setTheme('light')}
                   className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition cursor-pointer ${
                     theme === 'light'
-                      ? 'border-brand bg-brand/5 dark:bg-sky-900/10'
+                      ? 'border-brand bg-brand/5 dark:bg-brand/10'
                       : 'border-slate-200 dark:border-slate-700 hover:border-brand/40'
                   }`}
                 >
@@ -148,12 +148,12 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
                   onClick={() => setTheme('dark')}
                   className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition cursor-pointer ${
                     theme === 'dark'
-                      ? 'border-sky-500 bg-sky-900/10'
+                      ? 'border-brand bg-brand/10'
                       : 'border-slate-200 dark:border-slate-700 hover:border-sky-400/40'
                   }`}
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                    theme === 'dark' ? 'bg-sky-500/15 text-sky-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                    theme === 'dark' ? 'bg-brand/15 text-brand' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
                   }`}>
                     <Moon size={18} />
                   </div>
@@ -161,7 +161,7 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
                     <p className="text-xs font-bold text-slate-700 dark:text-slate-200">Dark</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">Easy on eyes</p>
                   </div>
-                  {theme === 'dark' && <CheckCircle size={13} className="text-sky-400" />}
+                  {theme === 'dark' && <CheckCircle size={13} className="text-brand" />}
                 </button>
               </div>
 
@@ -170,8 +170,8 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
               <SectionTitle title="Accent Color" icon={Sparkles} />
               <div className="flex flex-wrap gap-2.5">
                 {[
-                  { label: 'Purple', color: 'bg-sky-600', ring: 'ring-sky-500' },
-                  { label: 'Indigo', color: 'bg-sky-600', ring: 'ring-sky-500' },
+                  { label: 'Purple', color: 'bg-purple-600', ring: 'ring-purple-500' },
+                  { label: 'Indigo', color: 'bg-indigo-600', ring: 'ring-indigo-500' },
                   { label: 'Blue', color: 'bg-blue-600', ring: 'ring-blue-500' },
                   { label: 'Emerald', color: 'bg-emerald-600', ring: 'ring-emerald-500' },
                   { label: 'Rose', color: 'bg-rose-600', ring: 'ring-rose-500' },
@@ -348,7 +348,7 @@ export default function SettingsSidebar({ isOpen, onClose, theme, setTheme, user
 function SectionTitle({ title, icon: Icon, className = '' }) {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Icon size={13} className={`text-brand dark:text-sky-400 ${className}`} />
+      <Icon size={13} className={`text-brand ${className}`} />
       <span className={`text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 ${className}`}>
         {title}
       </span>
@@ -393,7 +393,7 @@ function ToggleRow({ label, description, enabled, onChange }) {
 function InfoNote({ text }) {
   return (
     <div className="flex gap-2 bg-slate-50 dark:bg-brand-dark-elevated/40 p-3 rounded-xl border border-slate-200/50 dark:border-slate-800">
-      <Info size={13} className="text-brand dark:text-sky-400 flex-shrink-0 mt-0.5" />
+      <Info size={13} className="text-brand flex-shrink-0 mt-0.5" />
       <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{text}</p>
     </div>
   );
