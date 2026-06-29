@@ -228,19 +228,88 @@ export default function AnalyticsSummary({ formFields, submissions }) {
                     </div>
                   );
                 })()}
-
                 {/* FILE ATTACHMENTS DIRECTORY */}
                 {isFile && (() => {
                   const files = getTextResponses(field.id);
                   return (
                     <div className="flex flex-col gap-2 max-h-48 overflow-y-auto mt-1 pr-1">
                       {files.map((fileStr, idx) => {
-                        const displayStr = fileStr.replace('File: ', '');
+                        let fileUrl = '';
+                        let fileName = fileStr;
+                        let isDownloadable = false;
+
+                        try {
+                          const parsed = JSON.parse(fileStr);
+                          if (parsed && parsed.dataUrl) {
+                            fileUrl = parsed.dataUrl;
+                            fileName = parsed.name;
+                            isDownloadable = true;
+                          }
+                        } catch (e) {
+                          fileName = fileStr.replace('File: ', '');
+                        }
+
+                        const handleFileClick = () => {
+                          if (!isDownloadable || !fileUrl) return;
+                          try {
+                            const newWindow = window.open();
+                            if (newWindow) {
+                              newWindow.document.title = fileName || "File Preview";
+                              const isImg = fileUrl.startsWith('data:image/');
+                              if (isImg) {
+                                newWindow.document.body.style.margin = '0';
+                                newWindow.document.body.style.backgroundColor = '#0f172a';
+                                newWindow.document.body.style.display = 'flex';
+                                newWindow.document.body.style.justifyContent = 'center';
+                                newWindow.document.body.style.alignItems = 'center';
+                                newWindow.document.body.style.height = '100vh';
+                                
+                                const img = newWindow.document.createElement('img');
+                                img.src = fileUrl;
+                                img.style.maxWidth = '100%';
+                                img.style.maxHeight = '100%';
+                                img.style.objectFit = 'contain';
+                                img.style.borderRadius = '8px';
+                                img.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+                                newWindow.document.body.appendChild(img);
+                              } else {
+                                const iframe = newWindow.document.createElement('iframe');
+                                iframe.src = fileUrl;
+                                iframe.style.border = '0';
+                                iframe.style.width = '100%';
+                                iframe.style.height = '100%';
+                                newWindow.document.body.style.margin = '0';
+                                newWindow.document.body.style.height = '100vh';
+                                newWindow.document.body.appendChild(iframe);
+                              }
+                            } else {
+                              throw new Error("Popup blocked");
+                            }
+                          } catch (err) {
+                            const link = document.createElement("a");
+                            link.href = fileUrl;
+                            link.download = fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }
+                        };
+
                         return (
                           <div key={idx} className="flex items-center justify-between text-xs bg-orange-500/5 dark:bg-orange-950/10 border border-orange-500/15 p-3 rounded-xl text-slate-700 dark:text-slate-300">
                             <div className="flex items-center gap-2 min-w-0">
                               <FileText size={13} className="text-orange-500 flex-shrink-0" />
-                              <span className="font-bold truncate max-w-[150px]">{displayStr}</span>
+                              {isDownloadable ? (
+                                <button
+                                  onClick={handleFileClick}
+                                  className="font-bold truncate max-w-[150px] hover:text-orange-500 hover:underline text-left cursor-pointer transition-colors"
+                                  title="Click to open or download attachment"
+                                >
+                                  {fileName}
+                                </button>
+                              ) : (
+                                <span className="font-bold truncate max-w-[150px]">{fileName}</span>
+                              )}
                             </div>
                             <span className="text-[9px] text-orange-600 dark:text-orange-400 font-extrabold uppercase bg-orange-500/10 border border-orange-500/10 px-2 py-0.5 rounded-lg select-none">
                               Attachment
@@ -254,7 +323,6 @@ export default function AnalyticsSummary({ formFields, submissions }) {
                     </div>
                   );
                 })()}
-
               </div>
             );
           })}

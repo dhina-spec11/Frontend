@@ -1,5 +1,105 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Search, Download, Trash2, Edit2, Check, X, AlertTriangle, ArrowUpDown, FileText, ExternalLink } from 'lucide-react';
+
+// Helper to parse file data from JSON or legacy string
+const parseFileData = (val) => {
+  if (!val) return { name: '', size: '', dataUrl: '', isDownloadable: false };
+  try {
+    const parsed = JSON.parse(val);
+    if (parsed && parsed.dataUrl) {
+      return {
+        name: parsed.name || 'Unnamed File',
+        size: parsed.size || '',
+        dataUrl: parsed.dataUrl,
+        isDownloadable: true
+      };
+    }
+  } catch (e) {
+    // Fallback to legacy string format
+  }
+  return {
+    name: val.toString().replace('File: ', ''),
+    size: '',
+    dataUrl: '',
+    isDownloadable: false
+  };
+};
+
+const FileCellRenderer = ({ cellVal }) => {
+  const { name, dataUrl, isDownloadable } = parseFileData(cellVal);
+
+  const handleFileClick = (e) => {
+    e.stopPropagation();
+    if (!isDownloadable || !dataUrl) return;
+
+    try {
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.title = name || "File Preview";
+        const isImg = dataUrl.startsWith('data:image/');
+        if (isImg) {
+          newWindow.document.body.style.margin = '0';
+          newWindow.document.body.style.backgroundColor = '#0f172a';
+          newWindow.document.body.style.display = 'flex';
+          newWindow.document.body.style.justifyContent = 'center';
+          newWindow.document.body.style.alignItems = 'center';
+          newWindow.document.body.style.height = '100vh';
+          
+          const img = newWindow.document.createElement('img');
+          img.src = dataUrl;
+          img.style.maxWidth = '100%';
+          img.style.maxHeight = '100%';
+          img.style.objectFit = 'contain';
+          img.style.borderRadius = '8px';
+          img.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+          newWindow.document.body.appendChild(img);
+        } else {
+          const iframe = newWindow.document.createElement('iframe');
+          iframe.src = dataUrl;
+          iframe.style.border = '0';
+          iframe.style.width = '100%';
+          iframe.style.height = '100%';
+          newWindow.document.body.style.margin = '0';
+          newWindow.document.body.style.height = '100vh';
+          newWindow.document.body.appendChild(iframe);
+        }
+      } else {
+        throw new Error("Popup blocked");
+      }
+    } catch (err) {
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  if (isDownloadable) {
+    return (
+      <button
+        onClick={handleFileClick}
+        className="inline-flex items-center gap-1 text-[11px] font-bold bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-500/20 cursor-pointer transition-colors max-w-full"
+        title="Click to open or download attachment"
+      >
+        <FileText size={11} className="flex-shrink-0" />
+        <span className="truncate max-w-[120px]">{name}</span>
+        <ExternalLink size={9} className="flex-shrink-0 opacity-70 ml-0.5" />
+      </button>
+    );
+  }
+
+  return (
+    <span 
+      className="inline-flex items-center gap-1 text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-lg border border-slate-200 dark:border-slate-700/60"
+      title="Simulated attachment (not downloadable)"
+    >
+      <FileText size={11} className="flex-shrink-0" />
+      <span className="truncate max-w-[120px]">{name}</span>
+    </span>
+  );
+};
 
 export default function ResponsesSheet({ formFields, submissions, setSubmissions, readOnly = false }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -231,7 +331,7 @@ export default function ResponsesSheet({ formFields, submissions, setSubmissions
                     const isFile = field.type === 'file';
                     
                     return (
-                      <td key={field.id} title={cellVal !== undefined ? cellVal.toString() : ''}>
+                      <td key={field.id} title={cellVal !== undefined ? parseFileData(cellVal).name : ''}>
                         {isEditing ? (
                           field.type === 'select' || field.type === 'checkbox' || field.type === 'radio' ? (
                             <select
@@ -244,6 +344,13 @@ export default function ResponsesSheet({ formFields, submissions, setSubmissions
                                 <option key={idx} value={o}>{o}</option>
                               ))}
                             </select>
+                          ) : field.type === 'file' ? (
+                            <input
+                              type="text"
+                              disabled
+                              className="sheets-cell-input bg-slate-50 dark:bg-brand-dark-elevated/10 text-slate-400 cursor-not-allowed opacity-80"
+                              value={parseFileData(editFormData[field.id] || '').name}
+                            />
                           ) : (
                             <input
                               type={field.type === 'number' ? 'number' : 'text'}
@@ -256,10 +363,7 @@ export default function ResponsesSheet({ formFields, submissions, setSubmissions
                           // Read Mode View
                           cellVal !== undefined && cellVal !== null ? (
                             isFile ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-lg border border-orange-500/10">
-                                <FileText size={11} />
-                                <span className="truncate max-w-[120px]">{cellVal.toString().replace('File: ', '')}</span>
-                              </span>
+                              <FileCellRenderer cellVal={cellVal} />
                             ) : (
                               cellVal.toString()
                             )
@@ -269,9 +373,7 @@ export default function ResponsesSheet({ formFields, submissions, setSubmissions
                         )}
                       </td>
                     );
-                  })}
-                  
-                  {/* Action Column — hidden for read-only collaborators */}
+                  })}{/* Action Column — hidden for read-only collaborators */}
                   {!readOnly && (
                     <td>
                       <div className="flex gap-1.5 justify-center">

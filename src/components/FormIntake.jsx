@@ -141,46 +141,58 @@ export default function FormIntake({
       return;
     }
 
-    // Initialize file states
-    setFileStates(prev => ({
-      ...prev,
-      [fieldId]: {
-        progress: 0,
-        status: 'uploading',
-        fileName: file.name,
-        fileSize: (file.size / 1024 / 1024).toFixed(2) + ' MB'
-      }
-    }));
-    setErrors(prev => ({ ...prev, [fieldId]: null }));
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64Data = e.target.result;
+      const fileData = {
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+        dataUrl: base64Data
+      };
 
-    // Simulate upload progress over 2 seconds
-    let currentProgress = 0;
-    const interval = setInterval(() => {
-      currentProgress += 10;
-      setFileStates(prev => {
-        const fieldState = prev[fieldId] || {};
-        if (currentProgress >= 100) {
-          clearInterval(interval);
-          // Set form value to file description string
-          handleInputChange(fieldId, `File: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+      // Initialize file states
+      setFileStates(prev => ({
+        ...prev,
+        [fieldId]: {
+          progress: 0,
+          status: 'uploading',
+          fileName: file.name,
+          fileSize: fileData.size,
+          previewUrl: file.type.startsWith('image/') ? base64Data : null
+        }
+      }));
+      setErrors(prev => ({ ...prev, [fieldId]: null }));
+
+      // Simulate upload progress over 2 seconds
+      let currentProgress = 0;
+      const interval = setInterval(() => {
+        currentProgress += 10;
+        setFileStates(prev => {
+          const fieldState = prev[fieldId] || {};
+          if (currentProgress >= 100) {
+            clearInterval(interval);
+            // Set form value to file description string
+            handleInputChange(fieldId, JSON.stringify(fileData));
+            return {
+              ...prev,
+              [fieldId]: {
+                ...fieldState,
+                progress: 100,
+                status: 'completed'
+              }
+            };
+          }
           return {
             ...prev,
             [fieldId]: {
               ...fieldState,
-              progress: 100,
-              status: 'completed'
+              progress: currentProgress
             }
           };
-        }
-        return {
-          ...prev,
-          [fieldId]: {
-            ...fieldState,
-            progress: currentProgress
-          }
-        };
-      });
-    }, 150);
+        });
+      }, 150);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleRemoveFile = (fieldId) => {
@@ -578,9 +590,17 @@ export default function FormIntake({
                     {fileState.status === 'completed' && (
                       <div className="border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/10 p-4 rounded-2xl flex items-center justify-between gap-4 animate-fade-in">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
-                            <Check size={16} />
-                          </div>
+                          {fileState.previewUrl ? (
+                            <img 
+                              src={fileState.previewUrl} 
+                              alt="Uploaded file preview" 
+                              className="w-10 h-10 rounded-xl object-cover border border-emerald-500/20 bg-slate-100 dark:bg-slate-800 flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center flex-shrink-0">
+                              <Check size={16} />
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate">{fileState.fileName}</span>
                             <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{fileState.fileSize} · Upload Complete</span>
