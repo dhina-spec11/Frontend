@@ -36,11 +36,44 @@ export default function FormBuilder({
   isSaving,
   loadTemplate 
 }) {
-  const [activeFieldId, setActiveFieldId] = useState('header');
-  const [draggingIndex, setDraggingIndex] = useState(null);
+  const [activeFieldId, setActiveFieldId] = useState('header');  const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
+  const handleBannerUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert("Maximum file size is 5 MB.");
+      return;
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert("Allowed formats are JPG, JPEG, PNG, and WebP.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormTheme(prev => ({
+        ...prev,
+        bannerImage: reader.result,
+        bannerHeight: prev.bannerHeight || 240
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveBanner = () => {
+    setFormTheme(prev => {
+      const copy = { ...prev };
+      delete copy.bannerImage;
+      return copy;
+    });
+  };
   // Field type helper to render nice icons in config
   const getFieldIcon = (type) => {
     switch (type) {
@@ -515,6 +548,85 @@ export default function FormBuilder({
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-brand-dark-elevated text-xs font-semibold text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none focus:border-brand dark:focus:border-sky-400 transition resize-y"
                 placeholder="Describe the purpose of this form..."
               />
+            </div>
+
+            <div className="flex flex-col gap-2.5 border-t border-slate-100 dark:border-slate-800/80 pt-4">
+              <label className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Header Banner Image</label>
+              
+              {formTheme?.bannerImage ? (
+                <div className="flex flex-col gap-4">
+                  {/* Preview container */}
+                  <div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900" style={{ height: '120px' }}>
+                    <img 
+                      src={formTheme.bannerImage} 
+                      alt="Banner Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center">
+                      <span className="text-[10px] text-white font-extrabold uppercase tracking-wider bg-slate-900/80 px-2.5 py-1 rounded-md">Live Preview</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <label className="flex-1">
+                      <span className="px-4 py-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5">
+                        Replace Image
+                      </span>
+                      <input 
+                        type="file" 
+                        accept=".jpg,.jpeg,.png,.webp" 
+                        onChange={handleBannerUpload} 
+                        className="hidden" 
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleRemoveBanner}
+                      className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-xs font-bold rounded-xl transition cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+
+                  {/* Banner Height slider */}
+                  <div className="flex flex-col gap-1.5 mt-1 bg-slate-50 dark:bg-brand-dark-elevated/20 p-3 rounded-xl border border-slate-150 dark:border-slate-800/60">
+                    <div className="flex justify-between items-center text-xs font-bold text-slate-600 dark:text-slate-400">
+                      <span>Banner Height</span>
+                      <span className="text-brand font-black">{formTheme.bannerHeight || 240}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="120"
+                      max="300"
+                      value={formTheme.bannerHeight || 240}
+                      onChange={(e) => setFormTheme(prev => ({ ...prev, bannerHeight: parseInt(e.target.value, 10) }))}
+                      className="w-full accent-brand bg-slate-200 dark:bg-slate-800 h-1 rounded-lg cursor-pointer"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <label className="border-2 border-dashed border-slate-200 dark:border-slate-800/80 hover:border-brand/50 dark:hover:border-sky-500/50 rounded-2xl p-6 text-center transition cursor-pointer flex flex-col items-center justify-center gap-2 group">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-brand-dark-elevated/40 text-slate-400 group-hover:text-brand flex items-center justify-center transition-colors">
+                      <svg viewBox="0 0 24 24" className="w-5 h-5 fill-none stroke-current text-slate-400 group-hover:text-brand" strokeWidth="2.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <circle cx="8.5" cy="8.5" r="1.5" />
+                        <polyline points="21 15 16 10 5 21" />
+                      </svg>
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">Upload Banner Image</span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 block mt-1">Supports JPG, PNG, WebP (Max 5MB)</span>
+                    </div>
+                    <input 
+                      type="file" 
+                      accept=".jpg,.jpeg,.png,.webp" 
+                      onChange={handleBannerUpload} 
+                      className="hidden" 
+                    />
+                  </label>
+                </div>
+              )}
             </div>
           </div>
         )}

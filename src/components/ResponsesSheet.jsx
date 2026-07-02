@@ -3,15 +3,17 @@ import { Search, Download, Trash2, Edit2, Check, X, AlertTriangle, ArrowUpDown, 
 
 // Helper to parse file data from JSON or legacy string
 const parseFileData = (val) => {
-  if (!val) return { name: '', size: '', dataUrl: '', isDownloadable: false };
+  if (!val) return { name: '', size: '', dataUrl: '', isDownloadable: false, isGoogleDrive: false };
   try {
     const parsed = JSON.parse(val);
     if (parsed && parsed.dataUrl) {
+      const isDrive = parsed.dataUrl.startsWith('https://drive.google.com') || parsed.driveUpload;
       return {
         name: parsed.name || 'Unnamed File',
         size: parsed.size || '',
         dataUrl: parsed.dataUrl,
-        isDownloadable: true
+        isDownloadable: true,
+        isGoogleDrive: isDrive
       };
     }
   } catch (e) {
@@ -21,16 +23,22 @@ const parseFileData = (val) => {
     name: val.toString().replace('File: ', ''),
     size: '',
     dataUrl: '',
-    isDownloadable: false
+    isDownloadable: false,
+    isGoogleDrive: false
   };
 };
 
 const FileCellRenderer = ({ cellVal }) => {
-  const { name, dataUrl, isDownloadable } = parseFileData(cellVal);
+  const { name, dataUrl, isDownloadable, isGoogleDrive } = parseFileData(cellVal);
 
   const handleFileClick = (e) => {
     e.stopPropagation();
     if (!isDownloadable || !dataUrl) return;
+
+    if (isGoogleDrive) {
+      window.open(dataUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
 
     try {
       const newWindow = window.open();
@@ -77,6 +85,22 @@ const FileCellRenderer = ({ cellVal }) => {
   };
 
   if (isDownloadable) {
+    if (isGoogleDrive) {
+      return (
+        <button
+          onClick={handleFileClick}
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-lg border border-emerald-500/20 cursor-pointer transition-colors max-w-full"
+          title="Click to view in Google Drive"
+        >
+          <svg viewBox="0 0 24 24" className="w-3 h-3 flex-shrink-0 fill-current text-emerald-600 dark:text-emerald-400" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.56.1 2.78 1.41 2.78 2.96 0 1.65-1.35 3-3 3z"/>
+          </svg>
+          <span className="truncate max-w-[120px]">{name}</span>
+          <ExternalLink size={9} className="flex-shrink-0 opacity-70 ml-0.5" />
+        </button>
+      );
+    }
+
     return (
       <button
         onClick={handleFileClick}
