@@ -290,23 +290,21 @@ input:checked+.slider:before {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Responsive Header Banner Image */
-.form-banner-header {
-  position: relative;
-  background-size: cover !important;
-  background-position: center !important;
-  transition: min-height 0.3s ease;
-  min-height: var(--banner-height-mobile, 160px) !important;
+/* Google Forms Style Banner Wrapper */
+.form-banner-wrapper {
+  width: 100%;
+  transition: height 0.3s ease;
+  height: var(--banner-height-mobile, 140px) !important;
 }
 
 @media (min-width: 640px) {
-  .form-banner-header {
-    min-height: var(--banner-height-tablet, 200px) !important;
+  .form-banner-wrapper {
+    height: var(--banner-height-tablet, 180px) !important;
   }
 }
 
 @media (min-width: 1024px) {
-  .form-banner-header {
-    min-height: var(--banner-height-desktop, 240px) !important;
+  .form-banner-wrapper {
+    height: var(--banner-height-desktop, 220px) !important;
   }
 }

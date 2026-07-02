@@ -11,6 +11,7 @@ import {
   Mail, 
   Calendar 
 } from 'lucide-react';
+import FormBanner from './FormBanner';
 
 const themeStyles = {
   glassmorphism: {
@@ -361,40 +362,19 @@ export default function FormIntake({
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 font-medium animate-fade-in relative z-10">
         
-        {/* Header Info Card */}
-        <div 
-          className={`${themeStyle.headerCard} ${themeConfig?.bannerImage ? 'form-banner-header flex flex-col justify-end' : ''}`}
-          style={themeConfig?.bannerImage ? {
-            '--banner-height-desktop': `${themeConfig.bannerHeight || 240}px`,
-            '--banner-height-tablet': `${Math.min(200, themeConfig.bannerHeight || 240)}px`,
-            '--banner-height-mobile': `${Math.min(160, themeConfig.bannerHeight || 240)}px`,
-            backgroundImage: `url(${themeConfig.bannerImage})`,
-            borderTopColor: 'var(--accent-color)'
-          } : {}}
-          role={themeConfig?.bannerImage ? "img" : undefined}
-          aria-label={themeConfig?.bannerImage ? "Form header banner image" : undefined}
-        >
-          {themeConfig?.bannerImage && (
-            <div className="absolute inset-0 bg-slate-950/45 z-0" />
-          )}
+        {/* Header Banner Image (Google Forms style) */}
+        <FormBanner imageUrl={themeConfig?.bannerImage} themeConfig={themeConfig} />
 
-          <div className={themeConfig?.bannerImage ? 'relative z-10 w-full text-white' : 'w-full'}>
-            <h1 className={`text-2xl font-black leading-tight ${themeConfig?.bannerImage ? 'text-white' : themeStyle.text}`}>{formTitle}</h1>
-            {formDescription && (
-              <p className={`text-xs leading-relaxed mt-2.5 font-medium ${themeConfig?.bannerImage ? 'text-slate-200' : themeStyle.textSecondary}`}>
-                {formDescription}
-              </p>
-            )}
-            <div className={`text-[9px] font-extrabold mt-3.5 border-t pt-4 uppercase tracking-widest ${
-              themeConfig?.bannerImage 
-                ? 'text-slate-300 border-white/20' 
-                : 'text-red-505 border-slate-200/50 dark:border-slate-800/80'
-            }`}>
-              * Required Field
-            </div>
-            {themeConfig?.bannerImage && (
-              <span className="sr-only">Form header banner image</span>
-            )}
+        {/* Header Info Card */}
+        <div className={themeStyle.headerCard}>
+          <h1 className={`text-2xl font-black leading-tight ${themeStyle.text}`}>{formTitle}</h1>
+          {formDescription && (
+            <p className={`text-xs leading-relaxed mt-2.5 font-medium ${themeStyle.textSecondary}`}>
+              {formDescription}
+            </p>
+          )}
+          <div className="text-[9px] text-red-505 font-extrabold mt-3.5 border-t border-slate-200/50 dark:border-slate-800/80 pt-4 uppercase tracking-widest">
+            * Required Field
           </div>
         </div>
 
