@@ -26,10 +26,13 @@ import {
   ExternalLink,
   Globe,
   Copy,
+  Bell,
+  Search,
   X,
   Mail,
   Send,
   Info,
+  FileText,
   LogOut,
   User,
   CloudLightning,
@@ -153,9 +156,13 @@ function DashboardPage({ user, theme, setTheme }) {
   const [allForms, setAllForms] = useState([]);
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
   const [toast, setToast] = useState({ message: '', visible: false, isError: false });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
   const triggerToast = (msg, isError = false) => {
@@ -167,20 +174,18 @@ function DashboardPage({ user, theme, setTheme }) {
     setDashboardLoading(true);
     try {
       const forms = await getAllForms();
-      // Filter forms that are owned by this user (or legacy forms without ownerUid)
-      const userForms = forms.filter(f => !f.ownerUid || f.ownerUid === user.uid);
+      const userForms = Array.isArray(forms) ? forms.filter(f => !f.ownerUid || f.ownerUid === user?.uid) : [];
       const formsWithStats = await Promise.all(
         userForms.map(async (f) => {
           try {
             const resp = await getResponses(f.id);
-            return { ...f, responseCount: resp.length };
+            return { ...f, responseCount: Array.isArray(resp) ? resp.length : 0 };
           } catch (e) {
             return { ...f, responseCount: 0 };
           }
         })
       );
-      // Sort newest first
-      setAllForms(formsWithStats.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)));
+      setAllForms(formsWithStats);
     } catch (err) {
       console.error("Error loading forms catalog:", err);
       triggerToast('Error loading forms directory.', true);
@@ -190,8 +195,21 @@ function DashboardPage({ user, theme, setTheme }) {
   };
 
   useEffect(() => {
-    loadDashboardData();
-  }, [user.uid]);
+    if (user?.uid) {
+      loadDashboardData();
+    }
+  }, [user?.uid]);
+
+  // Handle outside click to close user profile menu
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
 
   const handleCreateNewForm = async () => {
     const newFormId = `form-${Date.now()}`;
@@ -201,7 +219,7 @@ function DashboardPage({ user, theme, setTheme }) {
     ];
 
     try {
-      await saveForm(newFormId, defaultFields, 'Untitled Form', 'Provide form details below.', 'draft', user.uid);
+      await saveForm(newFormId, defaultFields, 'Untitled Form', 'Provide form details below.', 'draft', user?.uid);
       triggerToast('New blank form draft created.');
       navigate(`/form/${newFormId}/edit`);
     } catch (err) {
@@ -254,7 +272,7 @@ function DashboardPage({ user, theme, setTheme }) {
     }
 
     try {
-      await saveForm(newFormId, fields, title, description, 'draft', user.uid);
+      await saveForm(newFormId, fields, title, description, 'draft', user?.uid);
       triggerToast(`${title} template loaded as a draft.`);
       navigate(`/form/${newFormId}/edit`);
     } catch (err) {
@@ -286,92 +304,144 @@ function DashboardPage({ user, theme, setTheme }) {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-300">
+  const formatFriendlyDate = (dateVal) => {
+    if (!dateVal) return 'N/A';
+    
+    let dateStr = dateVal;
+    if (typeof dateVal === 'object') {
+      if (typeof dateVal.toDate === 'function') {
+        dateStr = dateVal.toDate();
+      } else if (dateVal.seconds) {
+        dateStr = new Date(dateVal.seconds * 1000);
+      } else {
+        try {
+          dateStr = String(dateVal);
+        } catch (e) {
+          return 'N/A';
+        }
+      }
+    }
+    
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) {
+        return typeof dateStr === 'string' ? dateStr : 'N/A';
+      }
+      
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays <= 1) {
+        return 'Today';
+      } else if (diffDays === 2) {
+        return 'Yesterday';
+      } else if (diffDays <= 7) {
+        return `${diffDays - 1} days ago`;
+      } else {
+        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+    } catch (e) {
+      return 'N/A';
+    }
+  };
 
-      {/* Dashboard Header */}
-      <header className="bg-white/70 dark:bg-brand-dark/70 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/50 sticky top-0 z-30 shadow-sm transition-colors duration-300">
-        <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-600 to-brand flex items-center justify-center text-white font-extrabold shadow-md shadow-brand/10">
-              <ClipboardCheck size={20} />
+  // Calculations for Summary Statistics
+  const totalForms = allForms.length;
+  const publishedForms = allForms.filter(f => f.status === 'published').length;
+  const draftForms = allForms.filter(f => f.status === 'draft' || !f.status).length;
+  const totalResponses = allForms.reduce((acc, f) => acc + (f.responseCount || 0), 0);
+
+  // Search, Filter, and Sort calculations
+  const filteredForms = allForms
+    .filter(f => {
+      const titleText = f.title || '';
+      const descText = f.description || '';
+      const matchesSearch = titleText.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            descText.toLowerCase().includes(searchQuery.toLowerCase());
+      if (statusFilter === 'all') return matchesSearch;
+      if (statusFilter === 'published') return matchesSearch && f.status === 'published';
+      if (statusFilter === 'draft') return matchesSearch && (f.status === 'draft' || !f.status);
+      return matchesSearch;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      if (sortBy === 'oldest') return new Date(a.createdAt || 0) - new Date(b.createdAt || 0);
+      if (sortBy === 'title') return (a.title || '').localeCompare(b.title || '');
+      if (sortBy === 'responses') return (b.responseCount || 0) - (a.responseCount || 0);
+      return 0;
+    });
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-[#070b13] text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-300">
+
+      {/* Modern Compact Navbar */}
+      <header className="bg-white/80 dark:bg-[#0c1424]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 sticky top-0 z-30 shadow-sm transition-colors duration-300">
+        <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-brand flex items-center justify-center text-white font-extrabold shadow-sm">
+              <ClipboardCheck size={16} />
             </div>
             <div>
-              <span className="font-black text-lg tracking-tight text-slate-800 dark:text-slate-100 block leading-tight">FormStudio</span>
-              <span className="text-[9px] text-brand dark:text-sky-400 font-extrabold uppercase tracking-widest block">Management Hub</span>
+              <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-slate-100 block leading-tight">FormStudio</span>
+              <span className="text-[8px] text-brand dark:text-sky-400 font-extrabold uppercase tracking-widest block mt-0.5">Workspace</span>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* User email badge */}
-            <div className="hidden md:flex items-center gap-2 bg-slate-50 dark:bg-brand-dark-elevated/40 border border-slate-200/50 dark:border-slate-800 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300">
-              <User size={13} className="text-brand dark:text-sky-400" />
-              <span className="max-w-[180px] truncate">{user.email}</span>
-            </div>
-
+            {/* Quick Actions */}
             <button
               onClick={handleCreateNewForm}
-              className="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4 py-2.5 rounded-xl transition duration-200 flex items-center gap-1.5 shadow-md shadow-brand/10 hover:scale-103 cursor-pointer"
+              className="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm hover:scale-[1.02] cursor-pointer"
             >
-              <PlusCircle size={14} />
-              <span>New Form</span>
+              <PlusCircle size={13} />
+              <span className="hidden sm:inline">New Form</span>
             </button>
 
+            {/* Notification Bell */}
+            <div className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
+              <Bell size={15} />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            </div>
+
+            {/* Dark Mode toggle */}
             <button
               onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-              className="w-9 h-9 border border-slate-200/60 dark:border-slate-800/80 rounded-full flex items-center justify-center bg-slate-50/50 dark:bg-brand-dark-elevated/50 text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+              className="w-8.5 h-8.5 border border-slate-200/60 dark:border-slate-800/85 rounded-full flex items-center justify-center bg-slate-50/50 dark:bg-brand-dark-elevated/50 text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               aria-label="Toggle theme"
-              title="Toggle Dark/Light Mode"
             >
-              {theme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+              {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
             </button>
 
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className="w-9 h-9 border border-slate-200/60 dark:border-slate-800/80 rounded-full flex items-center justify-center bg-slate-50/50 dark:bg-brand-dark-elevated/50 text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-              aria-label="Open Settings"
-              title="Settings"
-            >
-              <Settings size={15} />
-            </button>
-
-            {/* Logout Button */}
-            <div className="relative">
-              <button
-                onClick={() => setShowLogoutConfirm(v => !v)}
-                className="flex items-center gap-1.5 px-3 py-2 border border-slate-200/60 dark:border-slate-800/80 rounded-xl bg-slate-50/50 dark:bg-brand-dark-elevated/50 text-slate-600 dark:text-slate-300 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-950/20 dark:hover:text-red-400 dark:hover:border-red-900/40 text-xs font-bold transition cursor-pointer"
-                title="Sign Out"
+            {/* Unified User Dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <div 
+                onClick={() => setUserMenuOpen(prev => !prev)}
+                className="w-8.5 h-8.5 rounded-full bg-gradient-to-tr from-brand to-sky-400 text-white font-extrabold flex items-center justify-center text-xs shadow-sm cursor-pointer select-none"
               >
-                <LogOut size={14} />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
+                {user?.email ? user.email[0].toUpperCase() : 'U'}
+              </div>
 
-              {/* Logout confirmation popover */}
-              {showLogoutConfirm && (
-                <div className="absolute right-0 top-full mt-2 w-60 bg-white dark:bg-brand-dark border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4 z-50 animate-fade-in">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/30 flex items-center justify-center">
-                      <LogOut size={13} className="text-red-500" />
-                    </div>
-                    <p className="text-xs font-black text-slate-800 dark:text-slate-100">Sign out?</p>
+              {userMenuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-2.5 z-50 animate-fade-in text-xs font-semibold">
+                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/60 flex flex-col gap-0.5">
+                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">Logged in as</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-200 truncate">{user?.email || 'N/A'}</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed font-medium">
-                    You'll be signed out of your FormStudio workspace.
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={handleLogout}
-                      className="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-xl transition cursor-pointer"
-                    >
-                      Sign Out
-                    </button>
-                    <button
-                      onClick={() => setShowLogoutConfirm(false)}
-                      className="flex-1 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => { setUserMenuOpen(false); setIsSettingsOpen(true); }}
+                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 transition flex items-center gap-2"
+                  >
+                    <Settings size={13} />
+                    <span>Workspace Settings</span>
+                  </button>
+                  <button 
+                    onClick={() => { setUserMenuOpen(false); setShowLogoutConfirm(true); }}
+                    className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 transition flex items-center gap-2"
+                  >
+                    <LogOut size={13} />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               )}
             </div>
@@ -379,181 +449,277 @@ function DashboardPage({ user, theme, setTheme }) {
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="w-[98%] max-w-[1920px] mx-auto py-8 px-2 sm:px-4 flex flex-col gap-8">
+      {/* Main Content Area */}
+      <main className="w-[98%] max-w-[1920px] mx-auto py-6 px-2 sm:px-4 flex flex-col gap-6">
 
-        {/* Premium Dashboard Hero Area */}
-        <div className="relative rounded-3xl overflow-hidden bg-slate-950 dark:bg-slate-900/60 text-white p-8 md:p-12 shadow-2xl border border-slate-800/80 dark:border-slate-800/50">
-          {/* Decorative ambient color blobs for premium SaaS style */}
-          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none select-none" />
-          <div className="absolute bottom-0 left-1/3 w-96 h-96 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none select-none" />
+        {/* 1. Hero Section (Compact & Sleek) */}
+        <div className="relative rounded-[20px] overflow-hidden bg-slate-950 dark:bg-slate-900/40 text-white py-8 px-10 shadow-xl border border-slate-800 dark:border-slate-850 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 transition-all">
+          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
 
-          <div className="absolute right-0 bottom-0 opacity-10 transform translate-x-16 translate-y-16 select-none pointer-events-none text-slate-800 dark:text-slate-700">
-            <ClipboardCheck size={360} />
-          </div>
-
-          <div className="relative z-10 max-w-2xl">
-            <span className="bg-brand/10 text-brand dark:text-blue-400 text-[10px] font-black uppercase tracking-widest px-3.5 py-1.5 rounded-full border border-brand/20 backdrop-blur-xs">
-              SaaS Engine Core
+          <div className="relative z-10 max-w-xl">
+            <span className="bg-brand/10 text-brand dark:text-blue-400 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-md border border-brand/20 backdrop-blur-xs">
+              Personalized Dashboard
             </span>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight mt-6 leading-tight text-white">
-              Design and publish premium web forms instantly
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mt-4 leading-tight text-white">
+              Design & publish premium web forms instantly
             </h1>
-            <p className="text-slate-400 text-xs md:text-sm mt-3.5 leading-relaxed font-medium max-w-lg">
+            <p className="text-slate-400 text-xs mt-2.5 leading-relaxed font-medium max-w-md">
               Create interactive surveys, log client databases with robust file uploads, view detailed analytics, and export spreadsheet ledgers.
             </p>
-            <div className="flex flex-wrap gap-4 mt-8">
+            <div className="flex gap-3 mt-6">
               <button
                 onClick={handleCreateNewForm}
-                className="bg-brand hover:bg-brand-hover text-white px-6 py-3.5 rounded-xl text-xs font-extrabold transition duration-200 flex items-center gap-2 shadow-lg hover:scale-103 cursor-pointer"
+                className="bg-brand hover:bg-brand-hover text-white px-5 py-3 rounded-xl text-xs font-bold transition duration-200 flex items-center gap-2 shadow-sm hover:scale-[1.02] cursor-pointer"
               >
-                <PlusCircle size={15} />
+                <PlusCircle size={14} />
                 <span>Create Blank Form</span>
               </button>
             </div>
           </div>
+
+          {/* Interactive CSS dashboard preview mockup */}
+          <div className="hidden lg:block w-96 h-48 bg-[#0c1424]/90 border border-slate-800/80 rounded-2xl p-4 overflow-hidden relative shadow-2xl backdrop-blur-md flex-shrink-0 animate-fade-in">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-3 select-none">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-red-500/80" />
+                <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
+                <span className="w-2 h-2 rounded-full bg-green-500/80" />
+              </div>
+              <div className="text-[8px] text-slate-500 font-mono tracking-widest uppercase">FormStudio Live</div>
+            </div>
+            
+            <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-0.5">
+                <div className="w-16 h-1.5 bg-slate-800 rounded-full" />
+                <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg" />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <div className="w-24 h-1.5 bg-slate-800 rounded-full" />
+                <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between px-3.5">
+                  <div className="w-24 h-2 bg-slate-700 rounded-full" />
+                  <span className="w-2.5 h-2.5 rounded-full border-2 border-brand" />
+                </div>
+              </div>
+              
+              {/* Floating notification mockup badge */}
+              <div className="absolute bottom-4 right-4 bg-brand text-white px-3 py-1 rounded-xl shadow-lg border border-brand/20 flex items-center gap-1.5 animate-bounce text-[9px] font-black uppercase tracking-wider">
+                <PlusCircle size={10} />
+                <span>New entry +1</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Templates Catalog Section */}
-        <div className="flex flex-col gap-4">
-          <h2 className="text-xs font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase">
+        {/* 2. Dashboard Statistics Summary Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Total Forms', value: totalForms, icon: <FileText size={16} />, desc: 'Total forms created', color: 'text-brand bg-brand/5 dark:bg-brand/10' },
+            { label: 'Published Forms', value: publishedForms, icon: <Globe size={16} />, desc: 'Live public entries', color: 'text-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10' },
+            { label: 'Total Responses', value: totalResponses, icon: <Database size={16} />, desc: 'User entries logged', color: 'text-sky-500 bg-sky-500/5 dark:bg-sky-500/10' },
+            { label: 'Draft Forms', value: draftForms, icon: <Copy size={16} />, desc: 'Offline workspace drafts', color: 'text-amber-500 bg-amber-500/5 dark:bg-amber-500/10' }
+          ].map(stat => (
+            <div key={stat.label} className="bg-white dark:bg-[#0c1424] border border-slate-200/60 dark:border-slate-800/80 p-4.5 rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.01] transition duration-200">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">{stat.label}</span>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${stat.color}`}>
+                  {stat.icon}
+                </div>
+              </div>
+              <div className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{stat.value}</div>
+              <p className="text-[10px] text-slate-400 mt-1 font-medium">{stat.desc}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* 3. Templates Catalog Section */}
+        <div className="flex flex-col gap-3.5 mt-2">
+          <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase">
             Start with templates
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
             {[
-              { type: 'contact', title: 'Contact Details', desc: 'Securely gather users addresses, emails, phone numbers, and location details.', border: 'border-l-sky-500' },
-              { type: 'feedback', title: 'Event Feedback', desc: 'Assess conference outcomes, session ratings, preferences, and custom check boxes.', border: 'border-l-emerald-500' },
-              { type: 'inventory', title: 'Job Applications', desc: 'Intake developer applications, resumes, experiences, and drop down selections.', border: 'border-l-amber-500' }
+              { type: 'contact', title: 'Contact Details', desc: 'Securely gather users addresses, emails, phone numbers, and location details.', grad: 'from-blue-500 to-sky-500' },
+              { type: 'feedback', title: 'Event Feedback', desc: 'Assess conference outcomes, session ratings, preferences, and custom check boxes.', grad: 'from-emerald-500 to-teal-500' },
+              { type: 'inventory', title: 'Job Applications', desc: 'Intake developer applications, resumes, experiences, and drop down selections.', grad: 'from-amber-500 to-orange-500' }
             ].map(t => (
               <div
                 key={t.type}
-                onClick={() => handleCreateFromTemplate(t.type)}
-                className={`bg-white/80 dark:bg-brand-dark/80 p-6 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 border-l-4 ${t.border} hover:shadow-lg transition duration-300 hover:-translate-y-1 cursor-pointer flex flex-col justify-between group`}
+                className="bg-white dark:bg-[#0c1424] p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 shadow-xs hover:shadow-md transition duration-300 hover:-translate-y-1 flex flex-col justify-between group"
               >
-                <div>
-                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">{t.title}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed font-medium">{t.desc}</p>
+                <div className="flex items-start gap-4">
+                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${t.grad} text-white flex items-center justify-center flex-shrink-0 shadow-md`}>
+                    <ClipboardCheck size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">{t.title}</h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed font-medium">{t.desc}</p>
+                  </div>
                 </div>
-                <span className="text-[10px] text-brand dark:text-sky-400 font-extrabold uppercase mt-6 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                  <span>Launch Template</span>
-                  <ChevronRight size={12} />
-                </span>
+                <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/40 flex justify-end">
+                  <button
+                    onClick={() => handleCreateFromTemplate(t.type)}
+                    className="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-brand dark:text-sky-400 text-[10px] font-bold rounded-lg transition cursor-pointer"
+                  >
+                    Use Template
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Catalog Search & Directory Section */}
-        <div className="flex flex-col gap-5 mt-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-4">
+        {/* 4. Directory Search, Sort & Lists */}
+        <div className="flex flex-col gap-4 mt-2">
+          {/* Header Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
             <div>
-              <h2 className="text-sm font-black text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                <span>Your Forms Directory</span>
-                <span className="bg-slate-200/70 dark:bg-brand-dark-elevated text-slate-600 dark:text-slate-400 text-xs px-2.5 py-0.5 rounded-full font-bold">
-                  {allForms.length}
+              <h2 className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                <span>Forms Directory</span>
+                <span className="bg-slate-200/70 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-black">
+                  {filteredForms.length}
                 </span>
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5 font-medium">Search, modify, or inspect form submission analytics.</p>
             </div>
 
-            <div className="relative w-full sm:w-80">
-              <input
-                type="text"
-                placeholder="Search forms by title..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/60 dark:bg-brand-dark/60 text-xs focus:outline-none focus:border-brand dark:focus:border-sky-400 transition"
-              />
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                <Globe size={13} />
+            {/* Filter controls row */}
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Search box */}
+              <div className="relative w-full sm:w-60">
+                <input
+                  type="text"
+                  placeholder="Search directory..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs focus:outline-none focus:border-brand dark:focus:border-sky-400 transition"
+                />
+                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Search size={12} />
+                </div>
               </div>
+
+              {/* Status Filter dropdown */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
+              >
+                <option value="all">All Forms</option>
+                <option value="published">Published</option>
+                <option value="draft">Drafts</option>
+              </select>
+
+              {/* Sort dropdown */}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="title">Title (A-Z)</option>
+                <option value="responses">Most Responses</option>
+              </select>
             </div>
           </div>
 
-          {/* Catalog grid */}
+          {/* Catalog grid rendering */}
           {dashboardLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-slate-400">
-              <div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-bold">Syncing workspace dashboard...</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/50 dark:border-slate-800/80 p-5 flex flex-col gap-4 animate-pulse">
+                  <div className="flex justify-between items-center">
+                    <div className="w-24 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                    <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                  </div>
+                  <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                  <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                  <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg mt-2" />
+                </div>
+              ))}
             </div>
-          ) : allForms.filter(f => f.title.toLowerCase().includes(searchQuery.toLowerCase()) || f.description?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 ? (
-            <div className="bg-white/40 dark:bg-brand-dark/40 rounded-2xl p-16 border border-dashed border-slate-300 dark:border-slate-800/80 text-center flex flex-col items-center justify-center">
-              <Globe size={44} className="text-slate-300 dark:text-slate-700 mb-4" />
-              <h3 className="text-sm font-bold text-slate-600 dark:text-slate-400">No forms discovered</h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm leading-relaxed font-medium">
-                {searchQuery ? "No forms matched your search criteria." : "You have not initialized any forms yet. Create a blank form to start!"}
+          ) : filteredForms.length === 0 ? (
+            <div className="bg-white dark:bg-[#0c1424] rounded-2xl p-16 border border-dashed border-slate-200 dark:border-slate-800/80 text-center flex flex-col items-center justify-center">
+              <Globe size={36} className="text-slate-300 dark:text-slate-700 mb-3" />
+              <h3 className="text-xs font-black text-slate-600 dark:text-slate-300">No forms found</h3>
+              <p className="text-[11px] text-slate-400 mt-1 max-w-xs leading-relaxed font-medium">
+                {searchQuery || statusFilter !== 'all' 
+                  ? "No forms match your search queries and filter settings." 
+                  : "You have not created any forms yet."}
               </p>
-              {!searchQuery && (
+              {!searchQuery && statusFilter === 'all' && (
                 <button
                   onClick={handleCreateNewForm}
-                  className="mt-6 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-5 py-2.5 rounded-xl transition shadow-md cursor-pointer"
+                  className="mt-5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4.5 py-2.5 rounded-xl transition shadow-sm cursor-pointer"
                 >
-                  Create Custom Form
+                  Create Your First Form
                 </button>
               )}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
-              {allForms
-                .filter(f => f.title.toLowerCase().includes(searchQuery.toLowerCase()) || f.description?.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map(form => (
-                  <div
-                    key={form.id}
-                    className="bg-white dark:bg-brand-dark rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition duration-300 flex flex-col justify-between overflow-hidden group hover:border-brand/40 dark:hover:border-sky-500/40"
-                  >
-                    <div className="p-6 flex flex-col gap-3">
-                      <div className="flex items-center justify-between">
-                        <span className="bg-brand/10 text-brand dark:bg-sky-950/35 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
-                          <Database size={10} />
-                          <span>{form.responseCount || 0} Submissions</span>
-                        </span>
+              {filteredForms.map(form => (
+                <div
+                  key={form.id}
+                  className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-250/50 dark:border-slate-800/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
+                >
+                  <div className="p-5 flex flex-col gap-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="bg-brand/5 text-brand dark:bg-sky-950/30 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
+                        <Database size={10} />
+                        <span>{form.responseCount || 0} Responses</span>
+                      </span>
 
-                        {/* Status tag */}
-                        <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-full ${form.status === 'published'
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                            : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                          }`}>
-                          {form.status || 'draft'}
-                        </span>
+                      {/* Status Dot badge */}
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                        <span className="text-[9px] font-bold uppercase text-slate-500 dark:text-slate-400">{form.status || 'draft'}</span>
                       </div>
-                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand transition-colors line-clamp-1">
-                        {form.title}
-                      </h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
-                        {form.description ? form.description.split('|||')[0] : 'No summary configured.'}
-                      </p>
                     </div>
-
-                    {/* Footer buttons */}
-                    <div className="bg-slate-50/50 dark:bg-brand-dark-elevated/30 px-6 py-4 border-t border-slate-100/50 dark:border-slate-800/50 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          to={`/form/${form.id}/edit`}
-                          className="px-3.5 py-2 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-lg cursor-pointer transition"
-                        >
-                          Modify Workspace
-                        </Link>
-                        <Link
-                          to={`/form/${form.id}`}
-                          target="_blank"
-                          className="p-2 border border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-dark hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold flex items-center gap-1 transition"
-                        >
-                          <ExternalLink size={13} />
-                        </Link>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={(e) => handleDeleteForm(form.id, e)}
-                          className="p-2 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"
-                          title="Delete Form"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 group-hover:text-brand transition-colors line-clamp-1">
+                      {form.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
+                      {form.description ? form.description.split('|||')[0] : 'No summary descriptions configured.'}
+                    </p>
+                    
+                    {/* Timestamp tags */}
+                    <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold border-t border-slate-100/60 dark:border-slate-800/40 pt-2.5 mt-1">
+                      <span>Updated {formatFriendlyDate(form.updatedAt)}</span>
+                      <span>Created {formatFriendlyDate(form.createdAt)}</span>
                     </div>
                   </div>
-                ))}
+
+                  {/* Redesigned card actions */}
+                  <div className="bg-slate-50/50 dark:bg-brand-dark-elevated/25 px-5 py-3 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        to={`/form/${form.id}/edit`}
+                        className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                      >
+                        <Edit3 size={11} />
+                        <span>Edit Form</span>
+                      </Link>
+                      <Link
+                        to={`/form/${form.id}`}
+                        target="_blank"
+                        className="p-1.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-dark hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-350 rounded-lg text-xs font-bold flex items-center justify-center transition"
+                        title="View Public Form"
+                      >
+                        <ExternalLink size={12} />
+                      </Link>
+                    </div>
+
+                    <button
+                      onClick={(e) => handleDeleteForm(form.id, e)}
+                      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"
+                      title="Delete Form"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -561,6 +727,37 @@ function DashboardPage({ user, theme, setTheme }) {
 
       {/* Global Toast */}
       <Toast {...toast} />
+
+      {/* Logout confirmation popover modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="max-w-xs w-full bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 animate-fade-in relative">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-955/20 flex items-center justify-center">
+                <LogOut size={14} className="text-red-500" />
+              </div>
+              <h3 className="text-xs font-black text-slate-800 dark:text-slate-100">Sign out workspace?</h3>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-4 leading-relaxed font-medium">
+              You will be signed out of your FormStudio workspace dashboard.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={handleLogout}
+                className="flex-1 py-2 bg-red-500 hover:bg-red-655 text-white text-[10px] font-bold rounded-lg transition cursor-pointer"
+              >
+                Sign Out
+              </button>
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Settings Sidebar */}
       <SettingsSidebar
