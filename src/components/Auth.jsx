@@ -6,7 +6,7 @@ import {
   ArrowRight, Eye, EyeOff, Sparkles,
   BarChart3, Users, Globe, Shield, Zap
 } from 'lucide-react';
-import { logInUser, signUpUser } from '../firebase';
+import { logInUser, signUpUser, signInWithGoogle } from '../firebase';
 
 const FEATURES = [
   { icon: ClipboardCheck, label: 'Drag & Drop Builder' },
@@ -45,6 +45,19 @@ export default function Auth() {
       navigate('/');
     } catch (err) {
       setError(err.message || 'Authentication failed. Check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      await signInWithGoogle();
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Google authentication failed.');
     } finally {
       setLoading(false);
     }
@@ -266,6 +279,41 @@ export default function Auth() {
                       <ArrowRight size={16} />
                     </>
                   )}
+                </button>
+
+                {/* Divider */}
+                <div className="flex items-center gap-3 my-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 select-none">
+                  <div className="h-px bg-slate-100 dark:bg-slate-800/80 flex-1" />
+                  <span>or</span>
+                  <div className="h-px bg-slate-100 dark:bg-slate-800/80 flex-1" />
+                </div>
+
+                {/* Google Button */}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700/60 hover:bg-slate-50 dark:hover:bg-slate-800/30 text-slate-700 dark:text-slate-250 text-xs font-bold transition duration-200 cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <path
+                      fill="#EA4335"
+                      d="M5.266 9.765A7.077 7.077 0 0 1 12 4.909c1.69 0 3.218.6 4.418 1.582L19.91 3C17.782 1.145 15.055 0 12 0 7.33 0 3.357 2.72 1.5 6.7L5.266 9.765z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M16.04 15.342C14.936 16.084 13.568 16.5 12 16.5c-3.14 0-5.795-2.127-6.734-4.99L1.5 14.545C3.357 18.52 7.33 21.24 12 21.24c3.08 0 5.827-1.127 7.78-3.03l-3.74-2.868z"
+                    />
+                    <path
+                      fill="#4285F4"
+                      d="M23.49 12.275c0-.8-.08-1.57-.22-2.316H12v4.51H18.52c-.29 1.48-1.14 2.73-2.42 3.565l3.74 2.87c2.18-2.02 3.65-4.99 3.65-8.629z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.266 9.765C5.016 10.51 4.88 11.3 4.88 12.12s.136 1.61.386 2.355l-3.766 2.805A11.967 11.967 0 0 1 0 12.12c0-1.855.42-3.61 1.168-5.18l4.098 2.825z"
+                    />
+                  </svg>
+                  <span>Continue with Google</span>
                 </button>
               </form>
 
