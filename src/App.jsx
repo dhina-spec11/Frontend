@@ -453,12 +453,12 @@ function DashboardPage({ user, theme, setTheme }) {
       <main className="w-[98%] max-w-[1920px] mx-auto py-6 px-2 sm:px-4 flex flex-col gap-6">
 
         {/* 1. Hero Section (Compact & Sleek) */}
-        <div className="relative rounded-[20px] overflow-hidden bg-slate-950 dark:bg-slate-900/40 text-white py-8 px-10 shadow-xl border border-slate-800 dark:border-slate-850 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8 transition-all">
+        <div className="relative rounded-[20px] overflow-hidden bg-slate-950 dark:bg-slate-900/40 text-white py-6 px-8 shadow-xl border border-slate-800 dark:border-slate-850 flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-8 transition-all">
           <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
 
-          <div className="relative z-10 max-w-xl">
-            <span className="bg-brand/10 text-brand dark:text-blue-400 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-md border border-brand/20 backdrop-blur-xs">
+          <div className="relative z-10 max-w-xl flex flex-col justify-center">
+            <span className="bg-brand/10 text-brand dark:text-blue-400 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-md border border-brand/20 backdrop-blur-xs self-start">
               Personalized Dashboard
             </span>
             <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mt-4 leading-tight text-white">
@@ -479,7 +479,7 @@ function DashboardPage({ user, theme, setTheme }) {
           </div>
 
           {/* Interactive CSS dashboard preview mockup */}
-          <div className="hidden lg:block w-96 h-48 bg-[#0c1424]/90 border border-slate-800/80 rounded-2xl p-4 overflow-hidden relative shadow-2xl backdrop-blur-md flex-shrink-0 animate-fade-in">
+          <div className="hidden lg:block w-96 bg-[#0c1424]/90 border border-slate-800/80 rounded-2xl p-5 overflow-hidden relative shadow-2xl backdrop-blur-md flex-shrink-0 animate-fade-in flex flex-col justify-center">
             <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-3 select-none">
               <div className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-red-500/80" />
