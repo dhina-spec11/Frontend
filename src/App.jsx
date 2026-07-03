@@ -165,6 +165,48 @@ function DashboardPage({ user, theme, setTheme }) {
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
+  const [notifications, setNotifications] = useState([
+    {
+      id: 'notif-1',
+      title: 'New Response Received',
+      description: 'John Doe submitted a response to Contact Details.',
+      timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString(),
+      read: false,
+      type: 'response',
+      formId: 'contact'
+    },
+    {
+      id: 'notif-2',
+      title: 'Form Published',
+      description: 'Your form "Event Feedback" is now live.',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+      read: false,
+      type: 'publish',
+      formId: 'feedback'
+    },
+    {
+      id: 'notif-3',
+      title: 'Collaborator Added',
+      description: 'jane@company.com was added to your workspace.',
+      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+      read: true,
+      type: 'collaborator'
+    }
+  ]);
+  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
+  const notifMenuRef = useRef(null);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const handleToggleRead = (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const handleMarkAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    triggerToast("All notifications marked as read.");
+  };
+
   const triggerToast = (msg, isError = false) => {
     setToast({ message: msg, visible: true, isError });
     setTimeout(() => setToast({ message: '', visible: false, isError: false }), 3500);
@@ -209,6 +251,29 @@ function DashboardPage({ user, theme, setTheme }) {
     };
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  // Handle outside click to close notification menu
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (notifMenuRef.current && !notifMenuRef.current.contains(e.target)) {
+        setNotifMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  // Handle Escape key to close dropdowns
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setNotifMenuOpen(false);
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const handleCreateNewForm = async () => {
@@ -399,9 +464,97 @@ function DashboardPage({ user, theme, setTheme }) {
             </button>
 
             {/* Notification Bell */}
-            <div className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
-              <Bell size={15} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            <div className="relative flex items-center" ref={notifMenuRef}>
+              <button
+                onClick={() => setNotifMenuOpen(prev => !prev)}
+                className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center"
+                aria-label="Notifications"
+                aria-expanded={notifMenuOpen}
+                aria-haspopup="true"
+              >
+                <Bell size={15} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 min-w-[12px] h-[12px] px-0.5 rounded-full bg-blue-500 text-white text-[8px] font-black flex items-center justify-center animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifMenuOpen && (
+                <div 
+                  className="absolute right-0 top-full mt-2 w-90 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 animate-fade-in flex flex-col overflow-hidden text-xs"
+                  role="menu"
+                  aria-label="Notification center"
+                >
+                  {/* Header */}
+                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                    <span className="font-extrabold text-slate-800 dark:text-slate-100 text-xs">Notifications</span>
+                    {unreadCount > 0 && (
+                      <button 
+                        onClick={handleMarkAllRead}
+                        className="text-brand dark:text-sky-400 hover:underline font-extrabold cursor-pointer text-[10px]"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Body List */}
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/40">
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center text-slate-400 font-medium">
+                        All caught up! No notifications.
+                      </div>
+                    ) : (
+                      notifications.map(n => (
+                        <div 
+                          key={n.id} 
+                          onClick={() => handleToggleRead(n.id)}
+                          className={`p-3.5 flex items-start gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 cursor-pointer transition-colors relative ${!n.read ? 'bg-blue-500/[0.02]' : ''}`}
+                        >
+                          {/* Left Avatar Icon */}
+                          <div className="flex-shrink-0 mt-0.5">
+                            {n.type === 'response' && (
+                              <div className="w-7.5 h-7.5 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center"><Database size={13} /></div>
+                            )}
+                            {n.type === 'publish' && (
+                              <div className="w-7.5 h-7.5 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><Globe size={13} /></div>
+                            )}
+                            {n.type === 'collaborator' && (
+                              <div className="w-7.5 h-7.5 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center"><User size={13} /></div>
+                            )}
+                            {!['response', 'publish', 'collaborator'].includes(n.type) && (
+                              <div className="w-7.5 h-7.5 rounded-lg bg-slate-500/10 text-slate-500 flex items-center justify-center"><Bell size={13} /></div>
+                            )}
+                          </div>
+
+                          {/* Center Text Details */}
+                          <div className="flex-1 min-w-0 pr-4">
+                            <p className={`font-black text-slate-800 dark:text-slate-200 truncate ${!n.read ? 'text-brand dark:text-sky-400' : ''}`}>{n.title}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal font-medium mt-0.5">{n.description}</p>
+                            <span className="text-[9px] text-slate-450 dark:text-slate-500 font-bold block mt-1">{formatFriendlyDate(n.timestamp)}</span>
+                          </div>
+
+                          {/* Right Unread Indicator */}
+                          {!n.read && (
+                            <span className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-brand-dark-elevated/20 text-center">
+                    <button 
+                      onClick={() => triggerToast("Viewing all notification logs (connected to mock stream).")}
+                      className="text-slate-500 hover:text-brand dark:text-slate-400 dark:hover:text-sky-400 font-bold hover:underline cursor-pointer inline-block w-full text-center"
+                    >
+                      View All Notifications
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Dark Mode toggle */}
