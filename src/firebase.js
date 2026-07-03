@@ -5,7 +5,9 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut as fbSignOut, 
-  onAuthStateChanged 
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 
 const firebaseConfig = {
@@ -191,6 +193,27 @@ export const logInUser = async (email, password) => {
     return cred.user;
   }
   return mockAuth.signIn(email, password);
+};
+
+export const signInWithGoogle = async () => {
+  if (auth) {
+    const provider = new GoogleAuthProvider();
+    const cred = await signInWithPopup(auth, provider);
+    return cred.user;
+  }
+  
+  const email = "google-user@gmail.com";
+  const password = "google-mock-password";
+  try {
+    return await mockAuth.signIn(email, password);
+  } catch (err) {
+    try {
+      return await mockAuth.signUp(email, password);
+    } catch (signUpErr) {
+      console.error("Mock Google Auth registration failed", signUpErr);
+      throw err;
+    }
+  }
 };
 
 export const signUpUser = async (email, password) => {
