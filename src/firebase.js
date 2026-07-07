@@ -267,9 +267,8 @@ export const subscribeToAuth = (callback) => {
 };
 
 const isUsingMockDb = () => {
-  if (!db) return true;
-  if (localStorage.getItem('mock_firebase_current_user')) return true;
-  return false;
+  // Always use the MySQL database backend (Render) for database operations
+  return true;
 };
 
 // Exported standard Firestore/DB API
