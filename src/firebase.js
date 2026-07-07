@@ -266,9 +266,15 @@ export const subscribeToAuth = (callback) => {
   };
 };
 
+const isUsingMockDb = () => {
+  if (!db) return true;
+  if (localStorage.getItem('mock_firebase_current_user')) return true;
+  return false;
+};
+
 // Exported standard Firestore/DB API
 export const saveForm = async (formId, fields, title, description, status = 'published', ownerUid = null) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const ref = doc(db, 'forms', formId);
       const data = { 
@@ -291,7 +297,7 @@ export const saveForm = async (formId, fields, title, description, status = 'pub
 };
 
 export const getForm = async (formId) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const ref = doc(db, 'forms', formId);
       const snap = await getDoc(ref);
@@ -305,7 +311,7 @@ export const getForm = async (formId) => {
 };
 
 export const submitResponse = async (formId, responseData) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const colRef = collection(db, 'forms', formId, 'responses');
       const docRef = await addDoc(colRef, {
@@ -322,7 +328,7 @@ export const submitResponse = async (formId, responseData) => {
 };
 
 export const getResponses = async (formId) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const colRef = collection(db, 'forms', formId, 'responses');
       const snap = await getDocs(colRef);
@@ -340,7 +346,7 @@ export const getResponses = async (formId) => {
 };
 
 export const getAllForms = async () => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const colRef = collection(db, 'forms');
       const snap = await getDocs(colRef);
@@ -358,7 +364,7 @@ export const getAllForms = async () => {
 };
 
 export const deleteForm = async (formId) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const ref = doc(db, 'forms', formId);
       await deleteDoc(ref);
@@ -374,7 +380,7 @@ export const deleteForm = async (formId) => {
 };
 
 export const addCollaborator = async (formId, email) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const { arrayUnion } = await import('firebase/firestore');
       const ref = doc(db, 'forms', formId);
@@ -391,7 +397,7 @@ export const addCollaborator = async (formId, email) => {
 };
 
 export const removeCollaborator = async (formId, email) => {
-  if (db) {
+  if (db && !isUsingMockDb()) {
     try {
       const { arrayRemove } = await import('firebase/firestore');
       const ref = doc(db, 'forms', formId);
