@@ -47,7 +47,12 @@ import {
   Users,
   UserPlus,
   ShieldCheck,
-  Lock
+  Lock,
+  Menu,
+  Palette,
+  HelpCircle,
+  Download,
+  Home
 } from 'lucide-react';
 
 import FormBuilder from './components/FormBuilder';
@@ -56,6 +61,15 @@ import ResponsesSheet from './components/ResponsesSheet';
 import AnalyticsSummary from './components/AnalyticsSummary';
 import Auth from './components/Auth';
 import SettingsSidebar from './components/SettingsSidebar';
+
+// Sub-page Dashboard Views
+import ResponsesView from './components/dashboard/ResponsesView';
+import ThemesView from './components/dashboard/ThemesView';
+import SettingsView from './components/dashboard/SettingsView';
+import AccountView from './components/dashboard/AccountView';
+import ExportView from './components/dashboard/ExportView';
+import TrashView from './components/dashboard/TrashView';
+import HelpView from './components/dashboard/HelpView';
 import {
   saveForm,
   getForm,
@@ -165,6 +179,36 @@ function DashboardPage({ user, theme, setTheme }) {
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
 
+  // Collapsible sidebar state & active view tab state
+  const [activeView, setActiveView] = useState(() => localStorage.getItem('formstudio_dashboard_view') || 'dashboard');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => localStorage.getItem('formstudio_sidebar_collapsed') === 'true');
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Custom profile details loaded from local customization settings
+  const [profileName, setProfileName] = useState(() => localStorage.getItem('fs_account_name') || 'Builder User');
+  const [profileAvatar, setProfileAvatar] = useState(() => localStorage.getItem('fs_account_avatar') || '👩‍💻');
+
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileName(localStorage.getItem('fs_account_name') || 'Builder User');
+      setProfileAvatar(localStorage.getItem('fs_account_avatar') || '👩‍💻');
+    };
+    window.addEventListener('fs_profile_update', handleProfileUpdate);
+    return () => window.removeEventListener('fs_profile_update', handleProfileUpdate);
+  }, []);
+
+  const handleSetView = (view) => {
+    setActiveView(view);
+    localStorage.setItem('formstudio_dashboard_view', view);
+    setIsMobileOpen(false);
+  };
+
+  const handleToggleSidebar = () => {
+    const nextState = !isSidebarCollapsed;
+    setIsSidebarCollapsed(nextState);
+    localStorage.setItem('formstudio_sidebar_collapsed', String(nextState));
+  };
+
   const [notifications, setNotifications] = useState([
     {
       id: 'notif-1',
@@ -264,12 +308,13 @@ function DashboardPage({ user, theme, setTheme }) {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Handle Escape key to close dropdowns
+  // Handle Escape key to close dropdowns & mobile sidebar
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setNotifMenuOpen(false);
         setUserMenuOpen(false);
+        setIsMobileOpen(false);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -348,10 +393,17 @@ function DashboardPage({ user, theme, setTheme }) {
 
   const handleDeleteForm = async (formId, e) => {
     e.stopPropagation();
-    if (confirm('Are you sure you want to permanently delete this form and all its response entries?')) {
+    if (confirm('Are you sure you want to move this form to Trash?')) {
       try {
+        const formToDelete = allForms.find(f => f.id === formId);
+        if (formToDelete) {
+          const rawTrash = localStorage.getItem('formstudio_trash_forms');
+          const trash = rawTrash ? JSON.parse(rawTrash) : [];
+          trash.push(formToDelete);
+          localStorage.setItem('formstudio_trash_forms', JSON.stringify(trash));
+        }
         await deleteForm(formId);
-        triggerToast('Form deleted successfully.');
+        triggerToast('Form moved to Trash.');
         loadDashboardData();
       } catch (err) {
         console.error("Error deleting form:", err);
@@ -437,456 +489,600 @@ function DashboardPage({ user, theme, setTheme }) {
       return 0;
     });
 
-  return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#070b13] text-slate-800 dark:text-slate-100 pb-16 transition-colors duration-300">
+  const sidebarItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: <Home size={14} /> },
+    { id: 'my-forms', label: 'My Forms', icon: <FileText size={14} /> },
+    { id: 'responses', label: 'Responses', icon: <Database size={14} /> },
+    { id: 'themes', label: 'Themes', icon: <Palette size={14} /> },
+    { id: 'settings', label: 'Settings', icon: <Settings size={14} /> },
+    { id: 'account', label: 'Account', icon: <User size={14} /> },
+    { id: 'export', label: 'Export Data', icon: <Download size={14} /> },
+    { id: 'trash', label: 'Trash', icon: <Trash2 size={14} /> },
+    { id: 'help', label: 'Help & Support', icon: <HelpCircle size={14} /> }
+  ];
 
-      {/* Modern Compact Navbar */}
-      <header className="bg-white/80 dark:bg-[#0c1424]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 sticky top-0 z-30 shadow-sm transition-colors duration-300">
-        <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-2.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-brand flex items-center justify-center text-white font-extrabold shadow-sm">
+  return (
+    <div className="min-h-screen bg-slate-55 dark:bg-[#070b13] text-slate-800 dark:text-slate-100 transition-colors duration-300">
+      
+      {/* Mobile Sidebar Overlay backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 z-40 lg:hidden backdrop-blur-xs"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Left Collapsible Sidebar */}
+      <aside 
+        className={`fixed top-0 bottom-0 left-0 bg-white dark:bg-[#0F172A] border-r border-slate-200/60 dark:border-slate-800/80 z-45 transition-all duration-300 flex flex-col justify-between
+          ${isSidebarCollapsed ? 'w-[72px]' : 'w-[260px]'} 
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {/* Sidebar Header (Logo) */}
+        <div className="p-4.5 flex items-center justify-between border-b border-slate-100/60 dark:border-slate-800/50">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-brand flex items-center justify-center text-white font-extrabold shadow-sm flex-shrink-0">
               <ClipboardCheck size={16} />
             </div>
-            <div>
-              <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-slate-100 block leading-tight">FormStudio</span>
-              <span className="text-[8px] text-brand dark:text-sky-400 font-extrabold uppercase tracking-widest block mt-0.5">Workspace</span>
-            </div>
+            {!isSidebarCollapsed && (
+              <div className="animate-fade-in flex flex-col select-none">
+                <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-slate-100 leading-tight">FormStudio</span>
+                <span className="text-[8px] text-brand dark:text-sky-400 font-extrabold uppercase tracking-widest block mt-0.5">Workspace</span>
+              </div>
+            )}
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            {/* Quick Actions */}
-            <button
-              onClick={handleCreateNewForm}
-              className="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm hover:scale-[1.02] cursor-pointer"
-            >
-              <PlusCircle size={13} />
-              <span className="hidden sm:inline">New Form</span>
-            </button>
-
-            {/* Notification Bell */}
-            <div className="relative flex items-center" ref={notifMenuRef}>
+        {/* Navigation items */}
+        <nav className="flex-1 py-4 px-2 flex flex-col gap-1 overflow-y-auto">
+          {sidebarItems.map(item => {
+            const isActive = activeView === item.id;
+            return (
               <button
-                onClick={() => setNotifMenuOpen(prev => !prev)}
-                className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center"
-                aria-label="Notifications"
-                aria-expanded={notifMenuOpen}
-                aria-haspopup="true"
+                key={item.id}
+                onClick={() => handleSetView(item.id)}
+                className={`w-full py-2.5 rounded-xl transition duration-200 flex items-center gap-3 px-3.5 cursor-pointer group text-left relative
+                  ${isActive 
+                    ? 'bg-brand/10 text-brand dark:bg-sky-400/10 dark:text-sky-400 font-black' 
+                    : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                  }
+                `}
+                title={isSidebarCollapsed ? item.label : undefined}
               >
-                <Bell size={15} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 min-w-[12px] h-[12px] px-0.5 rounded-full bg-blue-500 text-white text-[8px] font-black flex items-center justify-center animate-pulse">
-                    {unreadCount}
-                  </span>
+                {isActive && (
+                  <span className="absolute left-0 top-2.5 bottom-2.5 w-1 rounded-r bg-brand dark:bg-sky-400" />
+                )}
+                
+                <span className={`transition duration-205 flex-shrink-0 ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}>
+                  {item.icon}
+                </span>
+                
+                {!isSidebarCollapsed && (
+                  <span className="text-xs font-bold animate-fade-in whitespace-nowrap">{item.label}</span>
                 )}
               </button>
+            );
+          })}
+        </nav>
 
-              {notifMenuOpen && (
-                <div 
-                  className="absolute right-0 top-full mt-2 w-90 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 animate-fade-in flex flex-col overflow-hidden text-xs"
-                  role="menu"
-                  aria-label="Notification center"
-                >
-                  {/* Header */}
-                  <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
-                    <span className="font-extrabold text-slate-800 dark:text-slate-100 text-xs">Notifications</span>
-                    {unreadCount > 0 && (
-                      <button 
-                        onClick={handleMarkAllRead}
-                        className="text-brand dark:text-sky-400 hover:underline font-extrabold cursor-pointer text-[10px]"
-                      >
-                        Mark all as read
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Body List */}
-                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/40">
-                    {notifications.length === 0 ? (
-                      <div className="p-8 text-center text-slate-400 font-medium">
-                        All caught up! No notifications.
-                      </div>
-                    ) : (
-                      notifications.map(n => (
-                        <div 
-                          key={n.id} 
-                          onClick={() => handleToggleRead(n.id)}
-                          className={`p-3.5 flex items-start gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 cursor-pointer transition-colors relative ${!n.read ? 'bg-blue-500/[0.02]' : ''}`}
-                        >
-                          {/* Left Avatar Icon */}
-                          <div className="flex-shrink-0 mt-0.5">
-                            {n.type === 'response' && (
-                              <div className="w-7.5 h-7.5 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center"><Database size={13} /></div>
-                            )}
-                            {n.type === 'publish' && (
-                              <div className="w-7.5 h-7.5 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><Globe size={13} /></div>
-                            )}
-                            {n.type === 'collaborator' && (
-                              <div className="w-7.5 h-7.5 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center"><User size={13} /></div>
-                            )}
-                            {!['response', 'publish', 'collaborator'].includes(n.type) && (
-                              <div className="w-7.5 h-7.5 rounded-lg bg-slate-500/10 text-slate-500 flex items-center justify-center"><Bell size={13} /></div>
-                            )}
-                          </div>
-
-                          {/* Center Text Details */}
-                          <div className="flex-1 min-w-0 pr-4">
-                            <p className={`font-black text-slate-800 dark:text-slate-200 truncate ${!n.read ? 'text-brand dark:text-sky-400' : ''}`}>{n.title}</p>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal font-medium mt-0.5">{n.description}</p>
-                            <span className="text-[9px] text-slate-450 dark:text-slate-500 font-bold block mt-1">{formatFriendlyDate(n.timestamp)}</span>
-                          </div>
-
-                          {/* Right Unread Indicator */}
-                          {!n.read && (
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500" />
-                          )}
-                        </div>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-brand-dark-elevated/20 text-center">
-                    <button 
-                      onClick={() => triggerToast("Viewing all notification logs (connected to mock stream).")}
-                      className="text-slate-500 hover:text-brand dark:text-slate-400 dark:hover:text-sky-400 font-bold hover:underline cursor-pointer inline-block w-full text-center"
-                    >
-                      View All Notifications
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Dark Mode toggle */}
-            <button
-              onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
-              className="w-8.5 h-8.5 border border-slate-200/60 dark:border-slate-800/85 rounded-full flex items-center justify-center bg-slate-50/50 dark:bg-brand-dark-elevated/50 text-slate-600 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
-            </button>
-
-            {/* Unified User Dropdown */}
-            <div className="relative" ref={userMenuRef}>
-              <div 
-                onClick={() => setUserMenuOpen(prev => !prev)}
-                className="w-8.5 h-8.5 rounded-full bg-gradient-to-tr from-brand to-sky-400 text-white font-extrabold flex items-center justify-center text-xs shadow-sm cursor-pointer select-none"
-              >
-                {user?.email ? user.email[0].toUpperCase() : 'U'}
-              </div>
-
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-2.5 z-50 animate-fade-in text-xs font-semibold">
-                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/60 flex flex-col gap-0.5">
-                    <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">Logged in as</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-200 truncate">{user?.email || 'N/A'}</span>
-                  </div>
-                  <button 
-                    onClick={() => { setUserMenuOpen(false); setIsSettingsOpen(true); }}
-                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 transition flex items-center gap-2"
-                  >
-                    <Settings size={13} />
-                    <span>Workspace Settings</span>
-                  </button>
-                  <button 
-                    onClick={() => { setUserMenuOpen(false); setShowLogoutConfirm(true); }}
-                    className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 transition flex items-center gap-2"
-                  >
-                    <LogOut size={13} />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              )}
-            </div>
+        {/* Sidebar user footer */}
+        <div className="p-3.5 border-t border-slate-100/60 dark:border-slate-800/50 flex items-center gap-3 overflow-hidden">
+          <div className="w-8.5 h-8.5 rounded-full bg-gradient-to-tr from-brand to-sky-400 text-white font-extrabold flex items-center justify-center text-xs shadow-sm flex-shrink-0 select-none">
+            {profileAvatar}
           </div>
-        </div>
-      </header>
-
-      {/* Main Content Area */}
-      <main className="w-[98%] max-w-[1920px] mx-auto py-6 px-2 sm:px-4 flex flex-col gap-6">
-
-        {/* 1. Hero Section (Compact & Sleek) */}
-        <div className="relative rounded-[20px] overflow-hidden bg-slate-950 dark:bg-slate-900/40 text-white py-6 px-8 shadow-xl border border-slate-800 dark:border-slate-850 flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-8 transition-all">
-          <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 max-w-xl flex flex-col justify-center">
-            <span className="bg-brand/10 text-brand dark:text-blue-400 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-md border border-brand/20 backdrop-blur-xs self-start">
-              Personalized Dashboard
-            </span>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mt-4 leading-tight text-white">
-              Design & publish premium web forms instantly
-            </h1>
-            <p className="text-slate-400 text-xs mt-2.5 leading-relaxed font-medium max-w-md">
-              Create interactive surveys, log client databases with robust file uploads, view detailed analytics, and export spreadsheet ledgers.
-            </p>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleCreateNewForm}
-                className="bg-brand hover:bg-brand-hover text-white px-5 py-3 rounded-xl text-xs font-bold transition duration-200 flex items-center gap-2 shadow-sm hover:scale-[1.02] cursor-pointer"
-              >
-                <PlusCircle size={14} />
-                <span>Create Blank Form</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Interactive CSS dashboard preview mockup */}
-          <div className="hidden lg:block w-96 bg-[#0c1424]/90 border border-slate-800/80 rounded-2xl p-5 overflow-hidden relative shadow-2xl backdrop-blur-md flex-shrink-0 animate-fade-in flex flex-col justify-center">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-3 select-none">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-red-500/80" />
-                <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
-                <span className="w-2 h-2 rounded-full bg-green-500/80" />
-              </div>
-              <div className="text-[8px] text-slate-500 font-mono tracking-widest uppercase">FormStudio Live</div>
-            </div>
-            
-            <div className="flex flex-col gap-2.5">
-              <div className="flex flex-col gap-0.5">
-                <div className="w-16 h-1.5 bg-slate-800 rounded-full" />
-                <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg" />
-              </div>
-              <div className="flex flex-col gap-0.5">
-                <div className="w-24 h-1.5 bg-slate-800 rounded-full" />
-                <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between px-3.5">
-                  <div className="w-24 h-2 bg-slate-700 rounded-full" />
-                  <span className="w-2.5 h-2.5 rounded-full border-2 border-brand" />
-                </div>
-              </div>
-              
-              {/* Floating notification mockup badge */}
-              <div className="absolute bottom-4 right-4 bg-brand text-white px-3 py-1 rounded-xl shadow-lg border border-brand/20 flex items-center gap-1.5 animate-bounce text-[9px] font-black uppercase tracking-wider">
-                <PlusCircle size={10} />
-                <span>New entry +1</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 2. Dashboard Statistics Summary Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: 'Total Forms', value: totalForms, icon: <FileText size={16} />, desc: 'Total forms created', color: 'text-brand bg-brand/5 dark:bg-brand/10' },
-            { label: 'Published Forms', value: publishedForms, icon: <Globe size={16} />, desc: 'Live public entries', color: 'text-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10' },
-            { label: 'Total Responses', value: totalResponses, icon: <Database size={16} />, desc: 'User entries logged', color: 'text-sky-500 bg-sky-500/5 dark:bg-sky-500/10' },
-            { label: 'Draft Forms', value: draftForms, icon: <Copy size={16} />, desc: 'Offline workspace drafts', color: 'text-amber-500 bg-amber-500/5 dark:bg-amber-500/10' }
-          ].map(stat => (
-            <div key={stat.label} className="bg-white dark:bg-[#0c1424] border border-slate-200/60 dark:border-slate-800/80 p-4.5 rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.01] transition duration-200">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">{stat.label}</span>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${stat.color}`}>
-                  {stat.icon}
-                </div>
-              </div>
-              <div className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{stat.value}</div>
-              <p className="text-[10px] text-slate-400 mt-1 font-medium">{stat.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* 3. Templates Catalog Section */}
-        <div className="flex flex-col gap-3.5 mt-2">
-          <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase">
-            Start with templates
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-            {[
-              { type: 'contact', title: 'Contact Details', desc: 'Securely gather users addresses, emails, phone numbers, and location details.', grad: 'from-blue-500 to-sky-500' },
-              { type: 'feedback', title: 'Event Feedback', desc: 'Assess conference outcomes, session ratings, preferences, and custom check boxes.', grad: 'from-emerald-500 to-teal-500' },
-              { type: 'inventory', title: 'Job Applications', desc: 'Intake developer applications, resumes, experiences, and drop down selections.', grad: 'from-amber-500 to-orange-500' }
-            ].map(t => (
-              <div
-                key={t.type}
-                className="bg-white dark:bg-[#0c1424] p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 shadow-xs hover:shadow-md transition duration-300 hover:-translate-y-1 flex flex-col justify-between group"
-              >
-                <div className="flex items-start gap-4">
-                  <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${t.grad} text-white flex items-center justify-center flex-shrink-0 shadow-md`}>
-                    <ClipboardCheck size={20} />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">{t.title}</h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed font-medium">{t.desc}</p>
-                  </div>
-                </div>
-                <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/40 flex justify-end">
-                  <button
-                    onClick={() => handleCreateFromTemplate(t.type)}
-                    className="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-brand dark:text-sky-400 text-[10px] font-bold rounded-lg transition cursor-pointer"
-                  >
-                    Use Template
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 4. Directory Search, Sort & Lists */}
-        <div className="flex flex-col gap-4 mt-2">
-          {/* Header Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
-            <div>
-              <h2 className="text-xs font-black text-slate-800 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wide">
-                <span>Forms Directory</span>
-                <span className="bg-slate-200/70 dark:bg-slate-800/80 text-slate-600 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-black">
-                  {filteredForms.length}
-                </span>
-              </h2>
-            </div>
-
-            {/* Filter controls row */}
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Search box */}
-              <div className="relative w-full sm:w-60">
-                <input
-                  type="text"
-                  placeholder="Search directory..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs focus:outline-none focus:border-brand dark:focus:border-sky-400 transition"
-                />
-                <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
-                  <Search size={12} />
-                </div>
-              </div>
-
-              {/* Status Filter dropdown */}
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
-              >
-                <option value="all">All Forms</option>
-                <option value="published">Published</option>
-                <option value="draft">Drafts</option>
-              </select>
-
-              {/* Sort dropdown */}
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="title">Title (A-Z)</option>
-                <option value="responses">Most Responses</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Catalog grid rendering */}
-          {dashboardLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/50 dark:border-slate-800/80 p-5 flex flex-col gap-4 animate-pulse">
-                  <div className="flex justify-between items-center">
-                    <div className="w-24 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
-                    <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
-                  </div>
-                  <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-                  <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-                  <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg mt-2" />
-                </div>
-              ))}
-            </div>
-          ) : filteredForms.length === 0 ? (
-            <div className="bg-white dark:bg-[#0c1424] rounded-2xl p-16 border border-dashed border-slate-200 dark:border-slate-800/80 text-center flex flex-col items-center justify-center">
-              <Globe size={36} className="text-slate-300 dark:text-slate-700 mb-3" />
-              <h3 className="text-xs font-black text-slate-600 dark:text-slate-300">No forms found</h3>
-              <p className="text-[11px] text-slate-400 mt-1 max-w-xs leading-relaxed font-medium">
-                {searchQuery || statusFilter !== 'all' 
-                  ? "No forms match your search queries and filter settings." 
-                  : "You have not created any forms yet."}
-              </p>
-              {!searchQuery && statusFilter === 'all' && (
-                <button
-                  onClick={handleCreateNewForm}
-                  className="mt-5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4.5 py-2.5 rounded-xl transition shadow-sm cursor-pointer"
-                >
-                  Create Your First Form
-                </button>
-              )}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
-              {filteredForms.map(form => (
-                <div
-                  key={form.id}
-                  className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-250/50 dark:border-slate-800/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
-                >
-                  <div className="p-5 flex flex-col gap-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="bg-brand/5 text-brand dark:bg-sky-950/30 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
-                        <Database size={10} />
-                        <span>{form.responseCount || 0} Responses</span>
-                      </span>
-
-                      {/* Status Dot badge */}
-                      <div className="flex items-center gap-1.5">
-                        <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                        <span className="text-[9px] font-bold uppercase text-slate-500 dark:text-slate-400">{form.status || 'draft'}</span>
-                      </div>
-                    </div>
-                    <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 group-hover:text-brand transition-colors line-clamp-1">
-                      {form.title}
-                    </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
-                      {form.description ? form.description.split('|||')[0] : 'No summary descriptions configured.'}
-                    </p>
-                    
-                    {/* Timestamp tags */}
-                    <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold border-t border-slate-100/60 dark:border-slate-800/40 pt-2.5 mt-1">
-                      <span>Updated {formatFriendlyDate(form.updatedAt)}</span>
-                      <span>Created {formatFriendlyDate(form.createdAt)}</span>
-                    </div>
-                  </div>
-
-                  {/* Redesigned card actions */}
-                  <div className="bg-slate-50/50 dark:bg-brand-dark-elevated/25 px-5 py-3 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <Link
-                        to={`/form/${form.id}/edit`}
-                        className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
-                      >
-                        <Edit3 size={11} />
-                        <span>Edit Form</span>
-                      </Link>
-                      <Link
-                        to={`/form/${form.id}`}
-                        target="_blank"
-                        className="p-1.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-dark hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-350 rounded-lg text-xs font-bold flex items-center justify-center transition"
-                        title="View Public Form"
-                      >
-                        <ExternalLink size={12} />
-                      </Link>
-                    </div>
-
-                    <button
-                      onClick={(e) => handleDeleteForm(form.id, e)}
-                      className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"
-                      title="Delete Form"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+          {!isSidebarCollapsed && (
+            <div className="flex flex-col min-w-0 flex-1 animate-fade-in text-[10px]">
+              <span className="font-extrabold text-slate-800 dark:text-slate-200 truncate">{profileName}</span>
+              <span className="text-slate-405 dark:text-slate-500 font-medium truncate mt-0.5">{user?.email}</span>
             </div>
           )}
         </div>
-      </main>
+      </aside>
+
+      {/* Main Container Wrapper */}
+      <div 
+        className={`min-h-screen flex flex-col transition-all duration-300 pb-16
+          ${isSidebarCollapsed ? 'lg:pl-[72px]' : 'lg:pl-[260px]'}
+        `}
+      >
+        {/* Top Navbar */}
+        <header className="bg-white/85 dark:bg-[#0c1424]/85 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 sticky top-0 z-30 shadow-xs transition-colors duration-300">
+          <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-2.5 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {/* Collapsible Trigger Menu (☰) */}
+              <button
+                onClick={() => {
+                  if (window.innerWidth < 1024) {
+                    setIsMobileOpen(prev => !prev);
+                  } else {
+                    handleToggleSidebar();
+                  }
+                }}
+                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-brand-dark-elevated/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-650 dark:text-slate-300 transition cursor-pointer"
+                aria-label="Toggle Sidebar"
+              >
+                <Menu size={15} />
+              </button>
+              
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-slate-100">
+                  {sidebarItems.find(i => i.id === activeView)?.label || 'Dashboard'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              {/* Quick Actions (only shown on relevant views to avoid clutter) */}
+              {(activeView === 'dashboard' || activeView === 'my-forms') && (
+                <button
+                  onClick={handleCreateNewForm}
+                  className="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm hover:scale-[1.02] cursor-pointer animate-fade-in"
+                >
+                  <PlusCircle size={13} />
+                  <span className="hidden sm:inline">New Form</span>
+                </button>
+              )}
+
+              {/* Notification Bell */}
+              <div className="relative flex items-center" ref={notifMenuRef}>
+                <button
+                  onClick={() => setNotifMenuOpen(prev => !prev)}
+                  className="relative p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer flex items-center justify-center"
+                  aria-label="Notifications"
+                  aria-expanded={notifMenuOpen}
+                  aria-haspopup="true"
+                >
+                  <Bell size={15} />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-1 right-1 min-w-[12px] h-[12px] px-0.5 rounded-full bg-blue-500 text-white text-[8px] font-black flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {notifMenuOpen && (
+                  <div 
+                    className="absolute right-0 top-full mt-2 w-90 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl z-50 animate-fade-in flex flex-col overflow-hidden text-xs"
+                    role="menu"
+                    aria-label="Notification center"
+                  >
+                    {/* Header */}
+                    <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 flex items-center justify-between">
+                      <span className="font-extrabold text-slate-800 dark:text-slate-100 text-xs">Notifications</span>
+                      {unreadCount > 0 && (
+                        <button 
+                          onClick={handleMarkAllRead}
+                          className="text-brand dark:text-sky-400 hover:underline font-extrabold cursor-pointer text-[10px]"
+                        >
+                          Mark all as read
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Body List */}
+                    <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/40">
+                      {notifications.length === 0 ? (
+                        <div className="p-8 text-center text-slate-400 font-medium">
+                          All caught up! No notifications.
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div 
+                            key={n.id} 
+                            onClick={() => handleToggleRead(n.id)}
+                            className={`p-3.5 flex items-start gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 cursor-pointer transition-colors relative ${!n.read ? 'bg-blue-500/[0.02]' : ''}`}
+                          >
+                            <div className="flex-shrink-0 mt-0.5">
+                              {n.type === 'response' && (
+                                <div className="w-7.5 h-7.5 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center"><Database size={13} /></div>
+                              )}
+                              {n.type === 'publish' && (
+                                <div className="w-7.5 h-7.5 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><Globe size={13} /></div>
+                              )}
+                              {n.type === 'collaborator' && (
+                                <div className="w-7.5 h-7.5 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center"><User size={13} /></div>
+                              )}
+                            </div>
+
+                            <div className="flex-1 min-w-0 pr-4">
+                              <p className={`font-black text-slate-800 dark:text-slate-200 truncate ${!n.read ? 'text-brand dark:text-sky-400' : ''}`}>{n.title}</p>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-normal font-medium mt-0.5">{n.description}</p>
+                              <span className="text-[9px] text-slate-450 dark:text-slate-500 font-bold block mt-1">{formatFriendlyDate(n.timestamp)}</span>
+                            </div>
+
+                            {!n.read && (
+                              <span className="absolute right-4 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500" />
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-brand-dark-elevated/20 text-center">
+                      <button 
+                        onClick={() => triggerToast("Viewing all notification logs (connected to mock stream).")}
+                        className="text-slate-500 hover:text-brand dark:text-slate-400 dark:hover:text-sky-400 font-bold hover:underline cursor-pointer inline-block w-full text-center"
+                      >
+                        View All Notifications
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Dark Mode toggle */}
+              <button
+                onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')}
+                className="w-8.5 h-8.5 border border-slate-200/60 dark:border-slate-800/85 rounded-full flex items-center justify-center bg-slate-50/50 dark:bg-brand-dark-elevated/50 text-slate-655 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+              </button>
+
+              {/* Unified Profile Menu */}
+              <div className="relative" ref={userMenuRef}>
+                <div 
+                  onClick={() => setUserMenuOpen(prev => !prev)}
+                  className="w-8.5 h-8.5 rounded-full bg-gradient-to-tr from-brand to-sky-400 text-white font-extrabold flex items-center justify-center text-xs shadow-sm cursor-pointer select-none"
+                >
+                  {profileAvatar}
+                </div>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl py-2.5 z-50 animate-fade-in text-xs font-semibold">
+                    <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/60 flex flex-col gap-0.5">
+                      <span className="text-[10px] text-slate-405 font-extrabold uppercase tracking-wide">Workspace Profile</span>
+                      <span className="font-bold text-slate-700 dark:text-slate-200 truncate">{profileName}</span>
+                    </div>
+                    <button 
+                      onClick={() => { setUserMenuOpen(false); handleSetView('settings'); }}
+                      className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 transition flex items-center gap-2"
+                    >
+                      <Settings size={13} />
+                      <span>Workspace Settings</span>
+                    </button>
+                    <button 
+                      onClick={() => { setUserMenuOpen(false); handleSetView('account'); }}
+                      className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-300 transition flex items-center gap-2"
+                    >
+                      <User size={13} />
+                      <span>Account Management</span>
+                    </button>
+                    <button 
+                      onClick={() => { setUserMenuOpen(false); setShowLogoutConfirm(true); }}
+                      className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-650 dark:text-red-400 transition flex items-center gap-2 border-t border-slate-100/60 dark:border-slate-800/40"
+                    >
+                      <LogOut size={13} />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic page switcher views */}
+        <main className="w-[96%] max-w-[1720px] mx-auto py-8 px-2 sm:px-4 flex flex-col gap-6 flex-1">
+          
+          {/* A. Dashboard Main View */}
+          {activeView === 'dashboard' && (
+            <div className="flex flex-col gap-6 animate-fade-in">
+              {/* 1. Hero Section */}
+              <div className="relative rounded-[20px] overflow-hidden bg-slate-950 dark:bg-slate-900/40 text-white py-6 px-8 shadow-xl border border-slate-800 dark:border-slate-850 flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-8 transition-all">
+                <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
+
+                <div className="relative z-10 max-w-xl flex flex-col justify-center">
+                  <span className="bg-brand/10 text-brand dark:text-blue-400 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-md border border-brand/20 backdrop-blur-xs self-start">
+                    Personalized Dashboard
+                  </span>
+                  <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mt-4 leading-tight text-white">
+                    Design & publish premium web forms instantly
+                  </h1>
+                  <p className="text-slate-400 text-xs mt-2.5 leading-relaxed font-medium max-w-md">
+                    Create interactive surveys, log client databases with robust file uploads, view detailed analytics, and export spreadsheet ledgers.
+                  </p>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={handleCreateNewForm}
+                      className="bg-brand hover:bg-brand-hover text-white px-5 py-3 rounded-xl text-xs font-bold transition duration-200 flex items-center gap-2 shadow-sm hover:scale-[1.02] cursor-pointer"
+                    >
+                      <PlusCircle size={14} />
+                      <span>Create Blank Form</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* CSS dashboard preview mockup */}
+                <div className="hidden lg:block w-96 bg-[#0c1424]/90 border border-slate-800/80 rounded-2xl p-5 overflow-hidden relative shadow-2xl backdrop-blur-md flex-shrink-0 animate-fade-in flex flex-col justify-center">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-3 select-none">
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-red-500/80" />
+                      <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
+                      <span className="w-2 h-2 rounded-full bg-green-500/80" />
+                    </div>
+                    <div className="text-[8px] text-slate-505 font-mono tracking-widest uppercase">FormStudio Live</div>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2.5">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="w-16 h-1.5 bg-slate-800 rounded-full" />
+                      <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg" />
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <div className="w-24 h-1.5 bg-slate-800 rounded-full" />
+                      <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between px-3.5">
+                        <div className="w-24 h-2 bg-slate-700 rounded-full" />
+                        <span className="w-2.5 h-2.5 rounded-full border-2 border-brand" />
+                      </div>
+                    </div>
+                    
+                    <div className="absolute bottom-4 right-4 bg-brand text-white px-3 py-1 rounded-xl shadow-lg border border-brand/20 flex items-center gap-1.5 animate-bounce text-[9px] font-black uppercase tracking-wider">
+                      <PlusCircle size={10} />
+                      <span>New entry +1</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Stats summary */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: 'Total Forms', value: totalForms, icon: <FileText size={16} />, desc: 'Total forms created', color: 'text-brand bg-brand/5 dark:bg-brand/10' },
+                  { label: 'Published Forms', value: publishedForms, icon: <Globe size={16} />, desc: 'Live public entries', color: 'text-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10' },
+                  { label: 'Total Responses', value: totalResponses, icon: <Database size={16} />, desc: 'User entries logged', color: 'text-sky-500 bg-sky-500/5 dark:bg-sky-500/10' },
+                  { label: 'Draft Forms', value: draftForms, icon: <Copy size={16} />, desc: 'Offline workspace drafts', color: 'text-amber-500 bg-amber-500/5 dark:bg-amber-500/10' }
+                ].map(stat => (
+                  <div key={stat.label} className="bg-white dark:bg-[#0c1424] border border-slate-200/60 dark:border-slate-800/80 p-4.5 rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.01] transition duration-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">{stat.label}</span>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${stat.color}`}>
+                        {stat.icon}
+                      </div>
+                    </div>
+                    <div className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{stat.value}</div>
+                    <p className="text-[10px] text-slate-400 mt-1 font-medium">{stat.desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* 3. Start with templates */}
+              <div className="flex flex-col gap-3.5 mt-2">
+                <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-550 tracking-wider uppercase">
+                  Start with templates
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
+                  {[
+                    { type: 'contact', title: 'Contact Details', desc: 'Securely gather users addresses, emails, phone numbers, and location details.', grad: 'from-blue-500 to-sky-500' },
+                    { type: 'feedback', title: 'Event Feedback', desc: 'Assess conference outcomes, session ratings, preferences, and custom check boxes.', grad: 'from-emerald-500 to-teal-500' },
+                    { type: 'inventory', title: 'Job Applications', desc: 'Intake developer applications, resumes, experiences, and drop down selections.', grad: 'from-amber-500 to-orange-500' }
+                  ].map(t => (
+                    <div
+                      key={t.type}
+                      className="bg-white dark:bg-[#0c1424] p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 shadow-xs hover:shadow-md transition duration-300 hover:-translate-y-1 flex flex-col justify-between group"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${t.grad} text-white flex items-center justify-center flex-shrink-0 shadow-md`}>
+                          <ClipboardCheck size={20} />
+                        </div>
+                        <div>
+                          <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">{t.title}</h3>
+                          <p className="text-[11px] text-slate-505 dark:text-slate-400 mt-1.5 leading-relaxed font-medium">{t.desc}</p>
+                        </div>
+                      </div>
+                      <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/40 flex justify-end">
+                        <button
+                          onClick={() => handleCreateFromTemplate(t.type)}
+                          className="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-brand dark:text-sky-400 text-[10px] font-bold rounded-lg transition cursor-pointer"
+                        >
+                          Use Template
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* B. My Forms Directory View */}
+          {(activeView === 'dashboard' || activeView === 'my-forms') && (
+            <div className={`flex flex-col gap-4 mt-2 ${activeView === 'my-forms' ? 'animate-fade-in' : ''}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
+                <div>
+                  <h2 className="text-xs font-black text-slate-805 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                    <span>Forms Directory</span>
+                    <span className="bg-slate-200/70 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-black">
+                      {filteredForms.length}
+                    </span>
+                  </h2>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="relative w-full sm:w-60">
+                    <input
+                      type="text"
+                      placeholder="Search directory..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs focus:outline-none focus:border-brand dark:focus:border-sky-400 transition"
+                    />
+                    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                      <Search size={12} />
+                    </div>
+                  </div>
+
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
+                  >
+                    <option value="all">All Forms</option>
+                    <option value="published">Published</option>
+                    <option value="draft">Drafts</option>
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="title">Title (A-Z)</option>
+                    <option value="responses">Most Responses</option>
+                  </select>
+                </div>
+              </div>
+
+              {dashboardLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/50 dark:border-slate-800/80 p-5 flex flex-col gap-4 animate-pulse">
+                      <div className="flex justify-between items-center">
+                        <div className="w-24 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                        <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                      </div>
+                      <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                      <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+                      <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg mt-2" />
+                    </div>
+                  ))}
+                </div>
+              ) : filteredForms.length === 0 ? (
+                <div className="bg-white dark:bg-[#0c1424] rounded-2xl p-16 border border-dashed border-slate-200 dark:border-slate-800/80 text-center flex flex-col items-center justify-center">
+                  <Globe size={36} className="text-slate-300 dark:text-slate-700 mb-3" />
+                  <h3 className="text-xs font-black text-slate-650 dark:text-slate-300">No forms found</h3>
+                  <p className="text-[11px] text-slate-400 mt-1 max-w-xs leading-relaxed font-medium">
+                    {searchQuery || statusFilter !== 'all' 
+                      ? "No forms match your search queries and filter settings." 
+                      : "You have not created any forms yet."}
+                  </p>
+                  {!searchQuery && statusFilter === 'all' && (
+                    <button
+                      onClick={handleCreateNewForm}
+                      className="mt-5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4.5 py-2.5 rounded-xl transition shadow-sm cursor-pointer"
+                    >
+                      Create Your First Form
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
+                  {filteredForms.map(form => (
+                    <div
+                      key={form.id}
+                      className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-250/50 dark:border-slate-800/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-305 flex flex-col justify-between overflow-hidden group"
+                    >
+                      <div className="p-5 flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="bg-brand/5 text-brand dark:bg-sky-950/30 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
+                            <Database size={10} />
+                            <span>{form.responseCount || 0} Responses</span>
+                          </span>
+
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                            <span className="text-[9px] font-bold uppercase text-slate-500 dark:text-slate-400">{form.status || 'draft'}</span>
+                          </div>
+                        </div>
+                        <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 group-hover:text-brand transition-colors line-clamp-1">
+                          {form.title}
+                        </h3>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
+                          {form.description ? form.description.split('|||')[0] : 'No summary descriptions configured.'}
+                        </p>
+                        
+                        <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold border-t border-slate-100/60 dark:border-slate-800/40 pt-2.5 mt-1">
+                          <span>Updated {formatFriendlyDate(form.updatedAt)}</span>
+                          <span>Created {formatFriendlyDate(form.createdAt)}</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50/50 dark:bg-brand-dark-elevated/25 px-5 py-3 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <Link
+                            to={`/form/${form.id}/edit`}
+                            className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                          >
+                            <Edit3 size={11} />
+                            <span>Edit Form</span>
+                          </Link>
+                          <Link
+                            to={`/form/${form.id}`}
+                            target="_blank"
+                            className="p-1.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-dark hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-505 dark:text-slate-350 rounded-lg text-xs font-bold flex items-center justify-center transition"
+                            title="View Public Form"
+                          >
+                            <ExternalLink size={12} />
+                          </Link>
+                        </div>
+
+                        <button
+                          onClick={(e) => handleDeleteForm(form.id, e)}
+                          className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"
+                          title="Delete Form"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* C. Responses Sub-view */}
+          {activeView === 'responses' && (
+            <ResponsesView allForms={allForms} user={user} />
+          )}
+
+          {/* D. Themes Sub-view */}
+          {activeView === 'themes' && (
+            <ThemesView theme={theme} setTheme={setTheme} />
+          )}
+
+          {/* E. Settings Sub-view */}
+          {activeView === 'settings' && (
+            <SettingsView />
+          )}
+
+          {/* F. Account Sub-view */}
+          {activeView === 'account' && (
+            <AccountView user={user} onLogout={handleLogout} />
+          )}
+
+          {/* G. Export Data Sub-view */}
+          {activeView === 'export' && (
+            <ExportView allForms={allForms} user={user} />
+          )}
+
+          {/* H. Trash Sub-view */}
+          {activeView === 'trash' && (
+            <TrashView onReloadCatalog={loadDashboardData} />
+          )}
+
+          {/* I. Help & Support Sub-view */}
+          {activeView === 'help' && (
+            <HelpView />
+          )}
+
+        </main>
+      </div>
 
       {/* Global Toast */}
       <Toast {...toast} />
 
-      {/* Logout confirmation popover modal */}
+      {/* Logout modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="max-w-xs w-full bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 animate-fade-in relative">
+          <div className="max-w-xs w-full bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 animate-fade-in relative select-none">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-955/20 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/20 flex items-center justify-center">
                 <LogOut size={14} className="text-red-500" />
               </div>
               <h3 className="text-xs font-black text-slate-800 dark:text-slate-100">Sign out workspace?</h3>
@@ -897,13 +1093,13 @@ function DashboardPage({ user, theme, setTheme }) {
             <div className="flex gap-2">
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2 bg-red-500 hover:bg-red-655 text-white text-[10px] font-bold rounded-lg transition cursor-pointer"
+                className="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg transition cursor-pointer"
               >
                 Sign Out
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-2 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="flex-1 py-2 border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 text-[10px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -912,7 +1108,7 @@ function DashboardPage({ user, theme, setTheme }) {
         </div>
       )}
 
-      {/* Settings Sidebar */}
+      {/* Original settings side drawer */}
       <SettingsSidebar
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
