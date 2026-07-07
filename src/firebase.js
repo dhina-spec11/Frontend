@@ -188,10 +188,7 @@ const mockDb = {
 
 // Exported standard Auth API
 export const logInUser = async (email, password) => {
-  if (auth) {
-    const cred = await signInWithEmailAndPassword(auth, email, password);
-    return cred.user;
-  }
+  // Always use mock auth (local storage / local Express backend) for Email/Password
   return mockAuth.signIn(email, password);
 };
 
@@ -217,26 +214,56 @@ export const signInWithGoogle = async () => {
 };
 
 export const signUpUser = async (email, password) => {
-  if (auth) {
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    return cred.user;
-  }
+  // Always use mock auth (local storage / local Express backend) for Email/Password
   return mockAuth.signUp(email, password);
 };
 
 export const logOutUser = async () => {
   if (auth) {
-    await fbSignOut(auth);
-    return;
+    try {
+      await fbSignOut(auth);
+    } catch (err) {
+      console.error("Firebase signOut failed:", err);
+    }
   }
   await mockAuth.signOut();
 };
 
 export const subscribeToAuth = (callback) => {
-  if (auth) {
-    return onAuthStateChanged(auth, callback);
-  }
-  return mockAuth.onAuthStateChanged(callback);
+  let firebaseUser = null;
+  let mockUser = null;
+
+  const notify = () => {
+    // Prioritize mock user if logged in, otherwise use firebase user
+    callback(mockUser || firebaseUser);
+  };
+
+  const unsubscribeFirebase = auth
+    ? onAuthStateChanged(auth, (user) => {
+        firebaseUser = user;
+        notify();
+      })
+    : () => {};
+
+  const handleMockChange = () => {
+    const raw = localStorage.getItem('mock_firebase_current_user');
+    mockUser = raw ? JSON.parse(raw) : null;
+    notify();
+  };
+
+  // Get initial mock state
+  const raw = localStorage.getItem('mock_firebase_current_user');
+  mockUser = raw ? JSON.parse(raw) : null;
+  notify();
+
+  window.addEventListener('storage', handleMockChange);
+  window.addEventListener('mock_auth_change', handleMockChange);
+
+  return () => {
+    unsubscribeFirebase();
+    window.removeEventListener('storage', handleMockChange);
+    window.removeEventListener('mock_auth_change', handleMockChange);
+  };
 };
 
 // Exported standard Firestore/DB API

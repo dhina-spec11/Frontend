@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail, Lock, AlertCircle, ClipboardCheck,
-  ArrowRight, Eye, EyeOff, Sparkles,
+  ArrowRight, Eye, EyeOff,
   BarChart3, Users, Globe, Shield, Zap
 } from 'lucide-react';
 import { logInUser, signUpUser, signInWithGoogle } from '../firebase';
@@ -57,6 +57,10 @@ export default function Auth() {
       await signInWithGoogle();
       navigate('/');
     } catch (err) {
+      // Ignore when the user simply closes the login popup window
+      if (err.code === 'auth/popup-closed-by-user' || err.message?.includes('popup-closed-by-user')) {
+        return;
+      }
       setError(err.message || 'Google authentication failed.');
     } finally {
       setLoading(false);
@@ -193,7 +197,7 @@ export default function Auth() {
                       required
                       autoComplete="email"
                       value={email}
-                      onChange={e => setEmail(e.target.value)}
+                      onChange={e => { setEmail(e.target.value); setError(''); }}
                       placeholder="you@example.com"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-dark-elevated/60 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand dark:focus:border-sky-400 focus:bg-white dark:focus:bg-brand-dark-elevated transition"
                     />
@@ -213,7 +217,7 @@ export default function Auth() {
                       required
                       autoComplete={isLogin ? 'current-password' : 'new-password'}
                       value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      onChange={e => { setPassword(e.target.value); setError(''); }}
                       placeholder="Min. 6 characters"
                       className="w-full pl-10 pr-11 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-dark-elevated/60 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand dark:focus:border-sky-400 focus:bg-white dark:focus:bg-brand-dark-elevated transition"
                     />
@@ -327,16 +331,6 @@ export default function Auth() {
                   {isLogin ? 'Sign up free →' : 'Sign in →'}
                 </button>
               </p>
-            </div>
-
-            {/* Card footer */}
-            <div className="bg-slate-50 dark:bg-brand-dark-elevated/30 border-t border-slate-100 dark:border-slate-800/60 px-8 py-4">
-              <div className="flex items-start gap-2">
-                <Sparkles size={12} className="text-sky-500 flex-shrink-0 mt-0.5" />
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-                  <strong className="text-slate-600 dark:text-slate-300">Demo Mode:</strong> No Firebase setup needed — sign up with any email/password to use the app with local storage.
-                </p>
-              </div>
             </div>
           </div>
 
