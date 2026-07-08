@@ -20,7 +20,9 @@ import {
   CheckSquare,
   HelpCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  MoreVertical,
+  Edit3
 } from 'lucide-react';
 
 export default function FormBuilder({ 
@@ -36,9 +38,12 @@ export default function FormBuilder({
   isSaving,
   loadTemplate 
 }) {
-  const [activeFieldId, setActiveFieldId] = useState('header');  const [draggingIndex, setDraggingIndex] = useState(null);
+  const [activeFieldId, setActiveFieldId] = useState('header');
+  const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [fieldToDelete, setFieldToDelete] = useState(null);
+  const [activeMenuFieldId, setActiveMenuFieldId] = useState(null);
 
   const handleBannerUpload = (e) => {
     const file = e.target.files[0];
@@ -372,7 +377,7 @@ export default function FormBuilder({
                     onDrop={(e) => handleDrop(e, index)}
                     onDragEnd={handleDragEnd}
                     onClick={() => setActiveFieldId(field.id)}
-                    className={`p-3 border transition-all rounded-xl cursor-pointer relative flex items-center justify-between gap-3 ${
+                    className={`p-3 border transition-all rounded-xl cursor-pointer relative flex items-center justify-between gap-3 group ${
                       isActive 
                         ? 'border-brand bg-brand-light dark:bg-brand-light/10 text-brand font-black shadow-xs' 
                         : 'border-slate-200/40 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/30 text-slate-600 dark:text-slate-400 font-medium'
@@ -391,10 +396,87 @@ export default function FormBuilder({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0 relative">
                       {field.required && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500" title="Required field" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 mr-1" title="Required field" />
                       )}
+
+                      {/* Three-dot options menu */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveMenuFieldId(activeMenuFieldId === field.id ? null : field.id);
+                          }}
+                          className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition opacity-20 group-hover:opacity-100 focus:opacity-100 cursor-pointer flex items-center justify-center"
+                          title="Field options"
+                          aria-label="Field options menu"
+                        >
+                          <MoreVertical size={13} />
+                        </button>
+
+                        {activeMenuFieldId === field.id && (
+                          <>
+                            <div className="fixed inset-0 z-45 cursor-default" onClick={(e) => { e.stopPropagation(); setActiveMenuFieldId(null); }} />
+                            <div className="absolute right-0 mt-1 w-32 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 flex flex-col overflow-hidden text-[10px] font-bold text-slate-705 dark:text-slate-300">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenuFieldId(null);
+                                  duplicateField(index, e);
+                                }}
+                                className="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition flex items-center gap-2"
+                              >
+                                <Copy size={11} />
+                                <span>Duplicate</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenuFieldId(null);
+                                  const newLabel = prompt("Rename field:", field.label);
+                                  if (newLabel !== null && newLabel.trim() !== '') {
+                                    updateField(field.id, { label: newLabel.trim() });
+                                  }
+                                }}
+                                className="w-full text-left px-3.5 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition flex items-center gap-2"
+                              >
+                                <Edit3 size={11} />
+                                <span>Rename</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveMenuFieldId(null);
+                                  setFieldToDelete(field.id);
+                                }}
+                                className="w-full text-left px-3.5 py-1.5 hover:bg-red-50 dark:hover:bg-red-950/20 text-red-600 dark:text-red-400 transition flex items-center gap-2"
+                              >
+                                <Trash2 size={11} />
+                                <span>Delete</span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Direct Delete Field Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFieldToDelete(field.id);
+                        }}
+                        className="p-1 rounded-lg text-slate-450 hover:text-red-550 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition opacity-20 group-hover:opacity-100 focus:opacity-100 cursor-pointer flex items-center justify-center"
+                        title="Delete Field"
+                        aria-label="Delete Field"
+                      >
+                        <Trash2 size={15} />
+                      </button>
                     </div>
                   </div>
                 );
@@ -839,6 +921,58 @@ export default function FormBuilder({
         </div>
 
       </div>
+
+      {/* Field delete confirmation modal */}
+      {fieldToDelete && (
+        <div className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 z-55" role="dialog" aria-modal="true">
+          <div className="bg-white dark:bg-brand-dark rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center flex-shrink-0">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-slate-800 dark:text-slate-200">Delete this field?</h3>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">This action cannot be undone.</p>
+              </div>
+            </div>
+            
+            <div className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+              <p>Are you sure you want to delete this field?</p>
+              <p className="text-[10px] text-slate-450 dark:text-slate-500 mt-1">Field name: "{formFields.find(f => f.id === fieldToDelete)?.label || 'Untitled Question'}"</p>
+            </div>
+
+            <div className="flex justify-end gap-2.5 mt-2">
+              <button
+                type="button"
+                onClick={() => setFieldToDelete(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-250 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-xl text-xs font-bold text-slate-650 dark:text-slate-300 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  const id = fieldToDelete;
+                  if (formFields.length <= 1) {
+                    alert("Your form must have at least one field.");
+                    setFieldToDelete(null);
+                    return;
+                  }
+                  setFormFields((prev) => prev.filter((field) => field.id !== id));
+                  if (activeFieldId === id) {
+                    setActiveFieldId('header');
+                  }
+                  setFieldToDelete(null);
+                }}
+                className="px-4 py-2 bg-red-500 hover:bg-red-650 text-white text-xs font-bold rounded-xl transition shadow-sm cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
