@@ -10,6 +10,7 @@ import {
   Globe,
   ExternalLink,
   Trash2,
+  Edit3,
   User,
   Calendar,
   ChevronLeft,

@@ -22,6 +22,7 @@ import {
   Share2,
   PlusCircle,
   Trash2,
+  RefreshCw,
   Sparkles,
   ExternalLink,
   Globe,
@@ -63,6 +64,7 @@ import Auth from './components/Auth';
 import SettingsSidebar from './components/SettingsSidebar';
 
 // Sub-page Dashboard Views
+import MainDashboardView from './components/dashboard/MainDashboardView';
 import ResponsesView from './components/dashboard/ResponsesView';
 import ThemesView from './components/dashboard/ThemesView';
 import SettingsView from './components/dashboard/SettingsView';
@@ -95,10 +97,11 @@ export default function App() {
   // Sync theme
   useEffect(() => {
     localStorage.setItem('formstudio_theme', theme);
+    document.documentElement.classList.remove('dark', 'theme-midnight', 'theme-ocean', 'theme-emerald', 'theme-sunset', 'theme-purple');
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
+    } else if (theme !== 'light') {
+      document.documentElement.classList.add('dark', `theme-${theme}`);
     }
   }, [theme]);
 
@@ -183,6 +186,12 @@ function DashboardPage({ user, theme, setTheme }) {
   const [activeView, setActiveView] = useState(() => localStorage.getItem('formstudio_dashboard_view') || 'dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => localStorage.getItem('formstudio_sidebar_collapsed') === 'true');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Command palette, notifications, and help drawer states
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [paletteQuery, setPaletteQuery] = useState('');
+  const [activeNotifTab, setActiveNotifTab] = useState('all');
+  const [helpMenuOpen, setHelpMenuOpen] = useState(false);
 
   // Custom profile details loaded from local customization settings
   const [profileName, setProfileName] = useState(() => localStorage.getItem('fs_account_name') || 'Builder User');
@@ -308,13 +317,19 @@ function DashboardPage({ user, theme, setTheme }) {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Handle Escape key to close dropdowns & mobile sidebar
+  // Handle keydown events (Escape to close menus, Ctrl+K to open Command Palette)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
         setNotifMenuOpen(false);
         setUserMenuOpen(false);
         setIsMobileOpen(false);
+        setCommandPaletteOpen(false);
+        setHelpMenuOpen(false);
+      }
+      if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        setCommandPaletteOpen(prev => !prev);
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -488,6 +503,43 @@ function DashboardPage({ user, theme, setTheme }) {
       if (sortBy === 'responses') return (b.responseCount || 0) - (a.responseCount || 0);
       return 0;
     });
+
+  const paletteItems = [
+    { label: 'Create Blank Form', icon: <PlusCircle size={14} className="text-blue-500" />, action: handleCreateNewForm, shortcut: 'Ctrl+N' },
+    { label: 'Navigate to Dashboard', icon: <Home size={14} />, action: () => handleSetView('dashboard') },
+    { label: 'Navigate to My Forms', icon: <FileText size={14} />, action: () => handleSetView('my-forms') },
+    { label: 'Navigate to Responses', icon: <Database size={14} />, action: () => handleSetView('responses') },
+    { label: 'Navigate to Themes', icon: <Palette size={14} />, action: () => handleSetView('themes') },
+    { label: 'Navigate to Settings', icon: <Settings size={14} />, action: () => handleSetView('settings') },
+    { label: 'Navigate to Trash', icon: <Trash2 size={14} />, action: () => handleSetView('trash') },
+    { label: 'Navigate to Export Data', icon: <Download size={14} />, action: () => handleSetView('export') },
+    { label: 'Navigate to Help', icon: <HelpCircle size={14} />, action: () => handleSetView('help') },
+    { label: 'Toggle Light/Dark Theme', icon: <Sun size={14} className="text-amber-500" />, action: () => setTheme(prev => prev === 'light' ? 'dark' : 'light'), shortcut: 'Ctrl+D' },
+    { label: 'Reset Dashboard Layout', icon: <RefreshCw size={14} className="text-red-500" />, action: () => {
+      localStorage.removeItem('fs_dashboard_layout');
+      window.location.reload();
+    }}
+  ];
+
+  const formPaletteItems = allForms
+    .filter(f => (f.title || '').toLowerCase().includes(paletteQuery.toLowerCase()))
+    .map(f => ({
+      label: `Edit Form: ${f.title}`,
+      icon: <Edit3 size={14} className="text-brand dark:text-sky-400" />,
+      action: () => navigate(`/form/${f.id}/edit`)
+    }));
+
+  const filteredPaletteItems = [
+    ...paletteItems.filter(item => item.label.toLowerCase().includes(paletteQuery.toLowerCase())),
+    ...formPaletteItems
+  ];
+
+  const filteredNotifs = notifications.filter(n => {
+    if (activeNotifTab === 'unread') return !n.read;
+    if (activeNotifTab === 'responses') return n.type === 'response';
+    if (activeNotifTab === 'system') return n.type === 'publish' || n.type === 'collaborator';
+    return true;
+  });
 
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: <Home size={14} /> },
