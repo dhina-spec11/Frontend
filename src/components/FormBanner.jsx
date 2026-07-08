@@ -9,21 +9,32 @@ const bannerGradients = {
   amber: 'from-amber-500 via-orange-500 to-red-600'
 };
 
-export default function FormBanner({ imageUrl, themeConfig }) {
+export default function FormBanner({ imageUrl, themeConfig, previewDevice = 'desktop', isPreview = false }) {
   const baseHeight = themeConfig?.bannerHeight || 220;
   
   // Custom gradient selector based on accent theme color
   const selectedAccent = themeConfig?.accent || 'brand';
   const gradientClass = bannerGradients[selectedAccent] || bannerGradients.brand;
 
+  const getBannerHeight = () => {
+    if (isPreview) {
+      if (previewDevice === 'mobile') return `${Math.min(140, Math.round(baseHeight * 0.63))}px`;
+      if (previewDevice === 'tablet') return `${Math.min(180, Math.round(baseHeight * 0.81))}px`;
+      return `${baseHeight}px`;
+    }
+    return undefined;
+  };
+
+  const styleOverrides = getBannerHeight() ? { height: getBannerHeight() } : {
+    '--banner-height-desktop': `${baseHeight}px`,
+    '--banner-height-tablet': `${Math.min(180, Math.round(baseHeight * 0.81))}px`,
+    '--banner-height-mobile': `${Math.min(140, Math.round(baseHeight * 0.63))}px`
+  };
+
   return (
     <div 
       className="w-full overflow-hidden form-banner-wrapper relative select-none"
-      style={{
-        '--banner-height-desktop': `${baseHeight}px`,
-        '--banner-height-tablet': `${Math.min(180, Math.round(baseHeight * 0.81))}px`,
-        '--banner-height-mobile': `${Math.min(140, Math.round(baseHeight * 0.63))}px`
-      }}
+      style={styleOverrides}
       role="img"
       aria-label="Form header banner decoration"
     >

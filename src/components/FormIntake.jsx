@@ -15,55 +15,55 @@ import FormBanner from './FormBanner';
 
 const themeStyles = {
   glassmorphism: {
-    container: "relative w-full overflow-hidden px-0 py-4 md:py-6 rounded-3xl min-h-[500px] z-10 transition-colors duration-300",
-    card: "backdrop-blur-md bg-white/60 dark:bg-slate-900/60 border border-white/20 dark:border-slate-800/40 shadow-premium hover:shadow-premium-hover rounded-2xl p-6 hover:-translate-y-0.5 transition-all duration-200",
-    headerCardWrapper: "backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-white/25 dark:border-slate-800/50 shadow-premium rounded-2xl overflow-hidden transition-all duration-200",
+    container: "relative w-full overflow-hidden min-h-[500px] z-10 transition-colors duration-300",
+    card: "backdrop-blur-md bg-white/60 dark:bg-slate-900/60 border border-white/20 dark:border-slate-800/40 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-200",
+    headerCardWrapper: "backdrop-blur-md bg-white/70 dark:bg-slate-900/70 border border-white/25 dark:border-slate-800/50 shadow-premium overflow-hidden transition-all duration-200",
     input: "w-full h-14 bg-white/40 dark:bg-slate-900/40 border border-[#E2E8F0] dark:border-slate-800/80 rounded-xl px-4 text-slate-800 dark:text-slate-100 placeholder-[#94A3B8] focus:outline-none focus:ring-4 focus:ring-[var(--accent-color)]/20 focus:border-[var(--accent-color)] transition-all duration-200 font-semibold text-sm",
-    button: "w-full md:w-[180px] h-[52px] bg-[var(--accent-color)] hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold rounded-[12px] text-sm transition-all duration-200 shadow-md cursor-pointer flex items-center justify-center gap-2",
+    button: "h-[52px] bg-[var(--accent-color)] hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold rounded-[12px] text-sm transition-all duration-200 shadow-md cursor-pointer flex items-center justify-center gap-2",
     clearButton: "px-5 py-2.5 h-[52px] border border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-850/50 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-[12px] cursor-pointer transition-all duration-200 flex items-center justify-center",
     text: "text-slate-850 dark:text-slate-100",
     textSecondary: "text-slate-550 dark:text-slate-400",
     label: "text-sm font-semibold text-slate-800 dark:text-slate-200"
   },
   'elegant-dark': {
-    container: "relative w-full bg-[#0a0f1d] px-0 py-4 md:py-6 rounded-3xl min-h-[500px] text-slate-100 z-10 transition-colors duration-300",
-    card: "bg-[#111a2e]/90 border border-slate-800/80 shadow-premium hover:shadow-premium-hover rounded-2xl p-6 hover:-translate-y-0.5 transition-all duration-200",
-    headerCardWrapper: "bg-[#111a2e] border border-slate-800/80 shadow-premium rounded-2xl overflow-hidden transition-all duration-200",
+    container: "relative w-full bg-[#0a0f1d] min-h-[500px] text-slate-100 z-10 transition-colors duration-300",
+    card: "bg-[#111a2e]/90 border border-slate-800/80 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-200",
+    headerCardWrapper: "bg-[#111a2e] border border-slate-800/80 shadow-premium overflow-hidden transition-all duration-200",
     input: "w-full h-14 bg-[#090d17] border border-slate-850 rounded-xl px-4 text-slate-100 placeholder-[#94A3B8] focus:outline-none focus:ring-4 focus:ring-[var(--accent-color)]/20 focus:border-[var(--accent-color)] transition-all duration-200 font-semibold text-sm",
-    button: "w-full md:w-[180px] h-[52px] bg-[var(--accent-color)] hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold rounded-[12px] text-sm transition-all duration-200 shadow-lg shadow-blue-500/10 cursor-pointer flex items-center justify-center gap-2",
+    button: "h-[52px] bg-[var(--accent-color)] hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold rounded-[12px] text-sm transition-all duration-200 shadow-lg shadow-blue-500/10 cursor-pointer flex items-center justify-center gap-2",
     clearButton: "px-5 py-2.5 h-[52px] border border-slate-800 bg-transparent hover:bg-slate-900/50 text-slate-300 text-sm font-semibold rounded-[12px] cursor-pointer transition-all duration-200 flex items-center justify-center",
     text: "text-slate-100",
     textSecondary: "text-slate-400",
     label: "text-sm font-semibold text-slate-200"
   },
   minimalist: {
-    container: "w-full bg-[#fafafa] dark:bg-[#121212] px-0 py-4 md:py-6 rounded-none min-h-[500px] z-10 transition-colors duration-300",
-    card: "bg-white dark:bg-black border border-slate-200 dark:border-slate-800 rounded-none p-7 shadow-none transition-all duration-300",
-    headerCardWrapper: "bg-white dark:bg-black border border-slate-300 dark:border-slate-750 rounded-none p-7 shadow-none transition-all duration-300",
+    container: "w-full bg-[#fafafa] dark:bg-[#121212] min-h-[500px] z-10 transition-colors duration-300",
+    card: "bg-white dark:bg-black border border-slate-200 dark:border-slate-800 shadow-none transition-all duration-300",
+    headerCardWrapper: "bg-white dark:bg-black border border-slate-300 dark:border-slate-750 shadow-none overflow-hidden transition-all duration-300",
     input: "w-full h-14 bg-transparent border border-slate-300 dark:border-slate-700 rounded-none px-4 text-slate-900 dark:text-slate-50 placeholder-[#94A3B8] focus:outline-none focus:border-[var(--accent-color)] focus:ring-0 transition-all font-semibold text-sm",
-    button: "w-full md:w-[180px] h-[52px] bg-[var(--accent-color)] hover:opacity-95 text-white font-bold rounded-none text-xs transition shadow-none cursor-pointer flex items-center justify-center gap-2",
+    button: "h-[52px] bg-[var(--accent-color)] hover:opacity-95 text-white font-bold rounded-none text-xs transition shadow-none cursor-pointer flex items-center justify-center gap-2",
     clearButton: "px-5 py-2.5 h-[52px] border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-none cursor-pointer transition hover:bg-slate-50 flex items-center justify-center",
     text: "text-slate-900 dark:text-slate-50",
     textSecondary: "text-slate-550 dark:text-slate-400",
     label: "text-sm font-semibold text-slate-900 dark:text-slate-100"
   },
   cyberpunk: {
-    container: "relative w-full bg-[#05010d] px-0 py-4 md:py-6 rounded-2xl min-h-[500px] border border-pink-500/20 z-10 transition-colors duration-300",
-    card: "bg-[#0b0318] border border-cyan-500/30 dark:border-[#00ffcc]/30 shadow-[0_0_15px_rgba(0,255,204,0.03)] hover:shadow-[0_0_20px_rgba(0,255,204,0.08)] rounded-lg p-6 hover:-translate-y-0.5 transition-all duration-205",
-    headerCardWrapper: "bg-[#0b0318] border-2 border-cyan-400 dark:border-[#00ffcc] shadow-[0_0_20px_rgba(0,255,204,0.1)] rounded-lg overflow-hidden transition-all duration-200",
+    container: "relative w-full bg-[#05010d] min-h-[500px] border border-pink-500/20 z-10 transition-colors duration-300",
+    card: "bg-[#0b0318] border border-cyan-500/30 dark:border-[#00ffcc]/30 shadow-[0_0_15px_rgba(0,255,204,0.03)] hover:shadow-[0_0_20px_rgba(0,255,204,0.08)] hover:-translate-y-0.5 transition-all duration-205",
+    headerCardWrapper: "bg-[#0b0318] border-2 border-cyan-400 dark:border-[#00ffcc] shadow-[0_0_20px_rgba(0,255,204,0.1)] overflow-hidden transition-all duration-200",
     input: "w-full h-14 bg-black border border-cyan-500/60 rounded-md px-4 text-cyan-400 placeholder-[#94A3B8] font-mono focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500 transition-all duration-200 font-semibold text-sm",
-    button: "w-full md:w-[180px] h-[52px] bg-cyan-500 dark:bg-[#00ffcc] text-black font-mono font-black rounded-md text-sm tracking-wider transition uppercase hover:bg-pink-550 hover:text-white shadow-[0_0_10px_rgba(0,255,204,0.2)] cursor-pointer flex items-center justify-center gap-2",
+    button: "h-[52px] bg-cyan-500 dark:bg-[#00ffcc] text-black font-mono font-black rounded-md text-sm tracking-wider transition uppercase hover:bg-pink-550 hover:text-white shadow-[0_0_10px_rgba(0,255,204,0.2)] cursor-pointer flex items-center justify-center gap-2",
     clearButton: "px-5 py-2.5 h-[52px] border border-cyan-500/30 text-cyan-550 hover:text-cyan-400 font-mono text-sm font-bold rounded-md cursor-pointer transition flex items-center justify-center",
     text: "text-cyan-400 font-mono",
     textSecondary: "text-cyan-650 font-mono",
     label: "text-sm font-black text-cyan-300 uppercase font-mono"
   },
   'warm-sunset': {
-    container: "w-full bg-gradient-to-tr from-amber-50/70 to-rose-50/70 dark:from-[#1d1212] dark:to-[#2b1723] px-0 py-4 md:py-6 rounded-3xl min-h-[500px] z-10 transition-colors duration-300",
-    card: "bg-white/95 dark:bg-[#20171a]/95 border border-amber-200/50 dark:border-rose-950/50 shadow-premium hover:shadow-premium-hover rounded-2xl p-6 hover:-translate-y-0.5 transition-all duration-200",
-    headerCardWrapper: "bg-white/95 dark:bg-[#20171a]/95 border border-amber-250 dark:border-rose-950 shadow-premium rounded-2xl overflow-hidden transition-all duration-200",
+    container: "w-full bg-gradient-to-tr from-amber-50/70 to-rose-50/70 dark:from-[#1d1212] dark:to-[#2b1723] min-h-[500px] z-10 transition-colors duration-300",
+    card: "bg-white/95 dark:bg-[#20171a]/95 border border-amber-200/50 dark:border-rose-950/50 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-200",
+    headerCardWrapper: "bg-white/95 dark:bg-[#20171a]/95 border border-amber-250 dark:border-rose-950 shadow-premium overflow-hidden transition-all duration-200",
     input: "w-full h-14 bg-amber-50/30 dark:bg-[#181113] border border-amber-200/80 dark:border-rose-900/60 rounded-xl px-4 text-slate-800 dark:text-slate-100 placeholder-[#94A3B8] focus:outline-none focus:ring-4 focus:ring-[var(--accent-color)]/20 focus:border-[var(--accent-color)] transition-all duration-200 font-semibold text-sm",
-    button: "w-full md:w-[180px] h-[52px] bg-[var(--accent-color)] hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold rounded-[12px] text-sm transition-all duration-200 shadow-md shadow-amber-500/10 cursor-pointer flex items-center justify-center gap-2",
+    button: "h-[52px] bg-[var(--accent-color)] hover:opacity-95 hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold rounded-[12px] text-sm transition-all duration-200 shadow-md shadow-amber-500/10 cursor-pointer flex items-center justify-center gap-2",
     clearButton: "px-5 py-2.5 h-[52px] border border-amber-200 dark:border-rose-950 bg-transparent hover:bg-amber-100/10 text-slate-700 dark:text-rose-200 text-sm font-semibold rounded-[12px] cursor-pointer transition-all duration-200 flex items-center justify-center",
     text: "text-slate-850 dark:text-slate-100",
     textSecondary: "text-slate-550 dark:text-rose-300/80",
@@ -98,6 +98,7 @@ export default function FormIntake({
   onSubmit, 
   isSubmitting,
   isPreview = false,
+  previewDevice = 'desktop', // 'desktop' | 'tablet' | 'mobile'
   themeConfig = { theme: 'glassmorphism', font: 'Outfit', accent: 'brand' }
 }) {
   const [formData, setFormData] = useState({});
@@ -110,6 +111,72 @@ export default function FormIntake({
 
   const themeStyle = themeStyles[themeConfig?.theme] || themeStyles.glassmorphism;
   const selectedAccent = accentColors[themeConfig?.accent] || '#2563EB';
+
+  // Dynamic layout helpers based on viewport/device simulator modes
+  const getCardPaddingClass = () => {
+    if (isPreview) {
+      if (previewDevice === 'mobile') return 'p-4';
+      if (previewDevice === 'tablet') return 'p-6';
+      return 'p-8';
+    }
+    return 'p-4 sm:p-6 md:p-8';
+  };
+
+  const getCardRoundnessClass = () => {
+    const themeName = themeConfig?.theme || 'glassmorphism';
+    if (themeName === 'minimalist') return 'rounded-none';
+    if (themeName === 'cyberpunk') return 'rounded-lg';
+    if (isPreview) {
+      if (previewDevice === 'mobile') return 'rounded-xl';
+      return 'rounded-2xl';
+    }
+    return 'rounded-xl sm:rounded-2xl';
+  };
+
+  const getContainerRoundnessClass = () => {
+    if (!isPreview) return ''; // no extra class for live form; CSS handles it
+    const themeName = themeConfig?.theme || 'glassmorphism';
+    if (themeName === 'minimalist') return 'rounded-none';
+    if (previewDevice === 'mobile') return 'rounded-xl';
+    return 'rounded-3xl';
+  };
+
+  const getContainerPaddingClass = () => {
+    if (!isPreview) return ''; // CSS class handles it for live form
+    if (previewDevice === 'mobile') return 'px-0 py-2';
+    if (previewDevice === 'tablet') return 'px-0 py-4';
+    return 'px-0 py-6';
+  };
+
+  const getContainerRoundnessAndPaddingForLive = () => {
+    // For live form, we let CSS control layout; for preview we use inline classes
+    return '';
+  };
+
+  const getFormGapClass = () => {
+    if (isPreview) {
+      if (previewDevice === 'mobile') return 'gap-4';
+      if (previewDevice === 'tablet') return 'gap-6';
+      return 'gap-8';
+    }
+    return 'gap-4 sm:gap-6 md:gap-8';
+  };
+
+  const getButtonsLayoutClass = () => {
+    if (isPreview) {
+      if (previewDevice === 'mobile' || previewDevice === 'tablet') return 'flex-col items-stretch';
+      return 'flex-row items-center';
+    }
+    return 'flex-col lg:flex-row items-stretch lg:items-center';
+  };
+
+  const getSubmitButtonWidthClass = () => {
+    if (isPreview) {
+      if (previewDevice === 'mobile' || previewDevice === 'tablet') return 'w-full';
+      return 'w-[180px]';
+    }
+    return 'w-full lg:w-[180px]';
+  };
 
   // Handle value inputs
   const handleInputChange = (fieldId, value) => {
@@ -350,7 +417,7 @@ export default function FormIntake({
   return (
     <div 
       style={{ fontFamily: getFontFamily(themeConfig?.font), '--accent-color': selectedAccent }} 
-      className={`${themeStyle.container}`}
+      className={`${themeStyle.container} ${getContainerRoundnessClass()} ${getContainerPaddingClass()}`}
     >
       {/* Background blobs for Glassmorphism theme */}
       {themeConfig?.theme === 'glassmorphism' && (
@@ -360,14 +427,18 @@ export default function FormIntake({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-8 font-medium animate-fade-in relative z-10">
+      <form onSubmit={handleSubmit} className={`flex flex-col ${getFormGapClass()} font-medium animate-fade-in relative z-10`}>
         
         {/* Unified Header Card (Banner + Content) */}
-        <div className={themeStyle.headerCardWrapper}>
-          <FormBanner imageUrl={themeConfig?.bannerImage} themeConfig={themeConfig} />
+        <div className={`${themeStyle.headerCardWrapper} ${getCardRoundnessClass()}`}>
+          <FormBanner imageUrl={themeConfig?.bannerImage} themeConfig={themeConfig} previewDevice={previewDevice} isPreview={isPreview} />
           
-          <div className="p-6 md:p-8 flex flex-col gap-3">
-            <h1 className={`text-2xl md:text-[28px] min-[1200px]:text-[34px] font-black leading-tight ${themeStyle.text}`}>{formTitle}</h1>
+          <div className={`${getCardPaddingClass()} flex flex-col gap-3`}>
+            <h1 className={`font-black leading-tight ${themeStyle.text} ${
+              isPreview
+                ? (previewDevice === 'mobile' ? 'text-xl' : previewDevice === 'tablet' ? 'text-2xl' : 'text-[28px]')
+                : 'text-xl sm:text-2xl md:text-[28px] lg:text-[32px]'
+            }`}>{formTitle}</h1>
             {formDescription && (
               <p className={`text-[16px] leading-relaxed mt-1 font-medium ${themeStyle.textSecondary}`}>
                 {formDescription}
@@ -390,14 +461,14 @@ export default function FormIntake({
             <div 
               key={field.id}
               id={`intake-card-${field.id}`}
-              className={`${themeStyle.card} ${
+              className={`${themeStyle.card} ${getCardPaddingClass()} ${getCardRoundnessClass()} ${
                 error 
                   ? 'border-red-400 dark:border-red-550 border-l-[6px] border-l-red-500' 
                   : 'focus-within:border-l-[6px] focus-within:border-l-[var(--accent-color)]'
               }`}
             >
               <div className="flex flex-col gap-1">
-                <label htmlFor={`input-${field.id}`} className={`${themeStyle.label} flex items-center gap-1 leading-tight`}>
+                <label htmlFor={`input-${field.id}`} className={`${themeStyle.label} ${isPreview && previewDevice === 'mobile' ? '!text-xs' : '!text-xs sm:!text-sm'} flex items-center gap-1 leading-tight`}>
                   <span>{field.label}</span>
                   {field.required && <span className="text-red-500" aria-hidden="true">*</span>}
                 </label>
@@ -478,7 +549,7 @@ export default function FormIntake({
 
                 {/* Date Input */}
                 {field.type === 'date' && (
-                  <div className="relative w-full max-w-xs">
+                  <div className={`relative w-full ${isPreview ? (previewDevice === 'mobile' ? 'w-full' : 'sm:max-w-xs') : 'sm:max-w-xs'}`}>
                     <input
                       id={`input-${field.id}`}
                       type="date"
@@ -640,11 +711,11 @@ export default function FormIntake({
         })}
 
         {/* Buttons bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 mt-8 border-t border-slate-200/50 dark:border-slate-800/80 pt-6">
+        <div className={`flex ${getButtonsLayoutClass()} justify-between gap-4 mt-8 border-t border-slate-200/50 dark:border-slate-800/80 pt-6`}>
           <button
             type="submit"
             disabled={isSubmitting}
-            className={themeStyle.button}
+            className={`${themeStyle.button} ${getSubmitButtonWidthClass()}`}
           >
             {isSubmitting ? (
               <>

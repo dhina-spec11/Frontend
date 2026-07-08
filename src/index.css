@@ -309,6 +309,73 @@ input:checked+.slider:before {
   }
 }
 
+/* =========================================
+   Published Form Responsive Layout
+   ========================================= */
+
+/* Reset box sizing across all form elements */
+.form-public-main *,
+.form-public-main *::before,
+.form-public-main *::after {
+  box-sizing: border-box;
+}
+
+/* Mobile-first: full width, 16px side padding */
+.form-public-main {
+  width: 100%;
+  padding: 24px 16px 48px;
+  overflow-x: hidden;
+}
+
+/* Tablet: 94% width, 24px side padding */
+@media (min-width: 768px) {
+  .form-public-main {
+    width: 94%;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 32px 24px 56px;
+  }
+}
+
+/* Desktop: centered, max 800px */
+@media (min-width: 1024px) {
+  .form-public-main {
+    max-width: 800px;
+    width: 100%;
+    padding: 40px 0 64px;
+  }
+}
+
+/* Ensure all cards and inputs inside the public form are full width */
+.form-public-main form {
+  width: 100%;
+}
+
+.form-public-main input,
+.form-public-main textarea,
+.form-public-main select {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* On mobile, make all buttons full width */
+@media (max-width: 767px) {
+  .form-public-main button[type="submit"],
+  .form-public-main button[type="button"] {
+    width: 100% !important;
+    min-height: 52px;
+  }
+}
+
+/* Touch target accessibility */
+.form-public-main label,
+.form-public-main button {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
 /* Custom Dashboard Theme Variations */
 .theme-midnight {
   --background: #030712;

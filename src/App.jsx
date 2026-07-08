@@ -1671,6 +1671,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
                           onSubmit={handlePreviewSubmit}
                           isSubmitting={false}
                           isPreview={true}
+                          previewDevice="mobile"
                           themeConfig={formTheme}
                         />
                       </div>
@@ -1692,6 +1693,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
                           onSubmit={handlePreviewSubmit}
                           isSubmitting={false}
                           isPreview={true}
+                          previewDevice="tablet"
                           themeConfig={formTheme}
                         />
                       </div>
@@ -1724,6 +1726,7 @@ function FormWorkspacePage({ user, theme, setTheme }) {
                           onSubmit={handlePreviewSubmit}
                           isSubmitting={false}
                           isPreview={true}
+                          previewDevice="desktop"
                           themeConfig={formTheme}
                         />
                       </div>
@@ -2455,11 +2458,11 @@ function FormPublicPage({ theme, setTheme, user }) {
   }
 
   return (
-    <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col pb-16">
+    <div className="min-h-screen bg-brand-tint dark:bg-brand-dark-bg text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col pb-16 overflow-x-hidden">
 
       {/* Mini navbar */}
       <header className="bg-white/70 dark:bg-brand-dark/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-30 transition-colors duration-300">
-        <div className="w-full md:w-[92%] lg:max-w-[760px] mx-auto px-4 md:px-6 lg:px-0 py-3 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 md:px-6 lg:px-8 py-3 max-w-[800px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-600 to-sky-600 flex items-center justify-center text-white font-extrabold shadow-sm">
               <ClipboardCheck size={16} />
@@ -2488,7 +2491,7 @@ function FormPublicPage({ theme, setTheme, user }) {
       </header>
 
       {/* Main Intake Content */}
-      <main className="w-full md:w-[92%] lg:max-w-[760px] mx-auto py-10 px-4 md:px-6 lg:px-0 flex-1">
+      <main className="form-public-main flex-1">
         <FormIntake
           formTitle={formTitle}
           formDescription={formDescription}
