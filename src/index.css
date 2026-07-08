@@ -308,3 +308,104 @@ input:checked+.slider:before {
     height: var(--banner-height-desktop, 220px) !important;
   }
 }
+
+/* Custom Dashboard Theme Variations */
+.theme-midnight {
+  --background: #030712;
+  --surface: #111827;
+  --surface-hover: #1f2937;
+  --sec-background: #1f2937;
+  --text: #f9fafb;
+  --text-secondary: #9ca3af;
+  --border: #374151;
+  --primary: #2563EB;
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.theme-ocean {
+  --background: #02162e;
+  --surface: #072547;
+  --surface-hover: #0b345f;
+  --sec-background: #0d3d70;
+  --text: #f0f6fc;
+  --text-secondary: #8b9eb0;
+  --border: #154675;
+  --primary: #0ea5e9;
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.theme-emerald {
+  --background: #012416;
+  --surface: #04412a;
+  --surface-hover: #065437;
+  --sec-background: #096140;
+  --text: #ecfdf5;
+  --text-secondary: #6ee7b7;
+  --border: #126344;
+  --primary: #10b981;
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.theme-sunset {
+  --background: #180905;
+  --surface: #270f07;
+  --surface-hover: #35150a;
+  --sec-background: #471c0e;
+  --text: #fffaf0;
+  --text-secondary: #fdba74;
+  --border: #5a2513;
+  --primary: #ea580c;
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+.theme-purple {
+  --background: #0d041c;
+  --surface: #190933;
+  --surface-hover: #230d47;
+  --sec-background: #2e115c;
+  --text: #faf5ff;
+  --text-secondary: #d8b4fe;
+  --border: #3b1675;
+  --primary: #a855f7;
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Scrollbar utility to hide it on templates slider carousel */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

@@ -769,131 +769,28 @@ function DashboardPage({ user, theme, setTheme }) {
           
           {/* A. Dashboard Main View */}
           {activeView === 'dashboard' && (
-            <div className="flex flex-col gap-6 animate-fade-in">
-              {/* 1. Hero Section */}
-              <div className="relative rounded-[20px] overflow-hidden bg-slate-950 dark:bg-slate-900/40 text-white py-6 px-8 shadow-xl border border-slate-800 dark:border-slate-850 flex flex-col lg:flex-row lg:items-stretch lg:justify-between gap-8 transition-all">
-                <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-brand/10 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-blue-500/5 blur-3xl pointer-events-none" />
-
-                <div className="relative z-10 max-w-xl flex flex-col justify-center">
-                  <span className="bg-brand/10 text-brand dark:text-blue-400 text-[9px] font-black uppercase tracking-wider px-3 py-1 rounded-md border border-brand/20 backdrop-blur-xs self-start">
-                    Personalized Dashboard
-                  </span>
-                  <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mt-4 leading-tight text-white">
-                    Design & publish premium web forms instantly
-                  </h1>
-                  <p className="text-slate-400 text-xs mt-2.5 leading-relaxed font-medium max-w-md">
-                    Create interactive surveys, log client databases with robust file uploads, view detailed analytics, and export spreadsheet ledgers.
-                  </p>
-                  <div className="flex gap-3 mt-6">
-                    <button
-                      onClick={handleCreateNewForm}
-                      className="bg-brand hover:bg-brand-hover text-white px-5 py-3 rounded-xl text-xs font-bold transition duration-200 flex items-center gap-2 shadow-sm hover:scale-[1.02] cursor-pointer"
-                    >
-                      <PlusCircle size={14} />
-                      <span>Create Blank Form</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* CSS dashboard preview mockup */}
-                <div className="hidden lg:block w-96 bg-[#0c1424]/90 border border-slate-800/80 rounded-2xl p-5 overflow-hidden relative shadow-2xl backdrop-blur-md flex-shrink-0 animate-fade-in flex flex-col justify-center">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-800/60 mb-3 select-none">
-                    <div className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-red-500/80" />
-                      <span className="w-2 h-2 rounded-full bg-yellow-500/80" />
-                      <span className="w-2 h-2 rounded-full bg-green-500/80" />
-                    </div>
-                    <div className="text-[8px] text-slate-505 font-mono tracking-widest uppercase">FormStudio Live</div>
-                  </div>
-                  
-                  <div className="flex flex-col gap-2.5">
-                    <div className="flex flex-col gap-0.5">
-                      <div className="w-16 h-1.5 bg-slate-800 rounded-full" />
-                      <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg" />
-                    </div>
-                    <div className="flex flex-col gap-0.5">
-                      <div className="w-24 h-1.5 bg-slate-800 rounded-full" />
-                      <div className="w-full h-7 bg-slate-950/60 border border-slate-850 rounded-lg flex items-center justify-between px-3.5">
-                        <div className="w-24 h-2 bg-slate-700 rounded-full" />
-                        <span className="w-2.5 h-2.5 rounded-full border-2 border-brand" />
-                      </div>
-                    </div>
-                    
-                    <div className="absolute bottom-4 right-4 bg-brand text-white px-3 py-1 rounded-xl shadow-lg border border-brand/20 flex items-center gap-1.5 animate-bounce text-[9px] font-black uppercase tracking-wider">
-                      <PlusCircle size={10} />
-                      <span>New entry +1</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Stats summary */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: 'Total Forms', value: totalForms, icon: <FileText size={16} />, desc: 'Total forms created', color: 'text-brand bg-brand/5 dark:bg-brand/10' },
-                  { label: 'Published Forms', value: publishedForms, icon: <Globe size={16} />, desc: 'Live public entries', color: 'text-emerald-500 bg-emerald-500/5 dark:bg-emerald-500/10' },
-                  { label: 'Total Responses', value: totalResponses, icon: <Database size={16} />, desc: 'User entries logged', color: 'text-sky-500 bg-sky-500/5 dark:bg-sky-500/10' },
-                  { label: 'Draft Forms', value: draftForms, icon: <Copy size={16} />, desc: 'Offline workspace drafts', color: 'text-amber-500 bg-amber-500/5 dark:bg-amber-500/10' }
-                ].map(stat => (
-                  <div key={stat.label} className="bg-white dark:bg-[#0c1424] border border-slate-200/60 dark:border-slate-800/80 p-4.5 rounded-2xl shadow-xs hover:shadow-md hover:scale-[1.01] transition duration-200">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wide">{stat.label}</span>
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${stat.color}`}>
-                        {stat.icon}
-                      </div>
-                    </div>
-                    <div className="text-2xl font-black text-slate-800 dark:text-slate-100 mt-2">{stat.value}</div>
-                    <p className="text-[10px] text-slate-400 mt-1 font-medium">{stat.desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* 3. Start with templates */}
-              <div className="flex flex-col gap-3.5 mt-2">
-                <h2 className="text-[10px] font-black text-slate-400 dark:text-slate-550 tracking-wider uppercase">
-                  Start with templates
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-                  {[
-                    { type: 'contact', title: 'Contact Details', desc: 'Securely gather users addresses, emails, phone numbers, and location details.', grad: 'from-blue-500 to-sky-500' },
-                    { type: 'feedback', title: 'Event Feedback', desc: 'Assess conference outcomes, session ratings, preferences, and custom check boxes.', grad: 'from-emerald-500 to-teal-500' },
-                    { type: 'inventory', title: 'Job Applications', desc: 'Intake developer applications, resumes, experiences, and drop down selections.', grad: 'from-amber-500 to-orange-500' }
-                  ].map(t => (
-                    <div
-                      key={t.type}
-                      className="bg-white dark:bg-[#0c1424] p-5 rounded-2xl border border-slate-200/50 dark:border-slate-800/80 shadow-xs hover:shadow-md transition duration-300 hover:-translate-y-1 flex flex-col justify-between group"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${t.grad} text-white flex items-center justify-center flex-shrink-0 shadow-md`}>
-                          <ClipboardCheck size={20} />
-                        </div>
-                        <div>
-                          <h3 className="text-xs font-black text-slate-800 dark:text-slate-200">{t.title}</h3>
-                          <p className="text-[11px] text-slate-505 dark:text-slate-400 mt-1.5 leading-relaxed font-medium">{t.desc}</p>
-                        </div>
-                      </div>
-                      <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800/40 flex justify-end">
-                        <button
-                          onClick={() => handleCreateFromTemplate(t.type)}
-                          className="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/60 dark:hover:bg-slate-800 text-brand dark:text-sky-400 text-[10px] font-bold rounded-lg transition cursor-pointer"
-                        >
-                          Use Template
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <div className="animate-fade-in">
+              <MainDashboardView
+                allForms={allForms}
+                filteredForms={filteredForms}
+                handleCreateNewForm={handleCreateNewForm}
+                handleCreateFromTemplate={handleCreateFromTemplate}
+                handleDeleteForm={handleDeleteForm}
+                loadDashboardData={loadDashboardData}
+                user={user}
+                theme={theme}
+                triggerToast={triggerToast}
+                setActiveView={handleSetView}
+              />
             </div>
           )}
 
           {/* B. My Forms Directory View */}
-          {(activeView === 'dashboard' || activeView === 'my-forms') && (
-            <div className={`flex flex-col gap-4 mt-2 ${activeView === 'my-forms' ? 'animate-fade-in' : ''}`}>
+          {activeView === 'my-forms' && (
+            <div className="flex flex-col gap-4 mt-2 animate-fade-in">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-3">
                 <div>
-                  <h2 className="text-xs font-black text-slate-805 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wide">
+                  <h2 className="text-xs font-black text-slate-850 dark:text-slate-200 flex items-center gap-2 uppercase tracking-wide">
                     <span>Forms Directory</span>
                     <span className="bg-slate-200/70 dark:bg-slate-800/80 text-slate-650 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-black">
                       {filteredForms.length}
@@ -908,7 +805,7 @@ function DashboardPage({ user, theme, setTheme }) {
                       placeholder="Search directory..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs focus:outline-none focus:border-brand dark:focus:border-sky-400 transition"
+                      className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-205 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs focus:outline-none focus:border-brand dark:focus:border-sky-400 transition"
                     />
                     <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
                       <Search size={12} />
@@ -918,7 +815,7 @@ function DashboardPage({ user, theme, setTheme }) {
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
+                    className="px-3 py-2 rounded-xl border border-slate-205 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-650 dark:text-slate-350 focus:outline-none transition cursor-pointer"
                   >
                     <option value="all">All Forms</option>
                     <option value="published">Published</option>
@@ -928,7 +825,7 @@ function DashboardPage({ user, theme, setTheme }) {
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value)}
-                    className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-600 dark:text-slate-350 focus:outline-none transition cursor-pointer"
+                    className="px-3 py-2 rounded-xl border border-slate-205 dark:border-slate-800 bg-white dark:bg-[#0c1424] text-xs font-bold text-slate-655 dark:text-slate-355 focus:outline-none transition cursor-pointer"
                   >
                     <option value="newest">Newest First</option>
                     <option value="oldest">Oldest First</option>
@@ -939,24 +836,24 @@ function DashboardPage({ user, theme, setTheme }) {
               </div>
 
               {dashboardLoading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {[1, 2, 3].map(i => (
-                    <div key={i} className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/50 dark:border-slate-800/80 p-5 flex flex-col gap-4 animate-pulse">
+                    <div key={i} className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/50 dark:border-slate-800/80 p-5.5 flex flex-col gap-4 animate-pulse">
                       <div className="flex justify-between items-center">
-                        <div className="w-24 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
-                        <div className="w-16 h-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
+                        <div className="w-24 h-4 bg-slate-200 dark:bg-slate-850 rounded-full" />
+                        <div className="w-16 h-4 bg-slate-200 dark:bg-slate-850 rounded-full" />
                       </div>
-                      <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-                      <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-                      <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-lg mt-2" />
+                      <div className="w-3/4 h-5 bg-slate-200 dark:bg-slate-850 rounded-lg" />
+                      <div className="w-full h-10 bg-slate-200 dark:bg-slate-850 rounded-lg" />
+                      <div className="w-full h-10 bg-slate-200 dark:bg-slate-850 rounded-lg mt-2" />
                     </div>
                   ))}
                 </div>
               ) : filteredForms.length === 0 ? (
                 <div className="bg-white dark:bg-[#0c1424] rounded-2xl p-16 border border-dashed border-slate-200 dark:border-slate-800/80 text-center flex flex-col items-center justify-center">
-                  <Globe size={36} className="text-slate-300 dark:text-slate-700 mb-3" />
+                  <Globe size={36} className="text-slate-350 dark:text-slate-700 mb-3" />
                   <h3 className="text-xs font-black text-slate-650 dark:text-slate-300">No forms found</h3>
-                  <p className="text-[11px] text-slate-400 mt-1 max-w-xs leading-relaxed font-medium">
+                  <p className="text-[11px] text-slate-400 mt-1 max-w-xs leading-relaxed font-semibold">
                     {searchQuery || statusFilter !== 'all' 
                       ? "No forms match your search queries and filter settings." 
                       : "You have not created any forms yet."}
@@ -964,57 +861,57 @@ function DashboardPage({ user, theme, setTheme }) {
                   {!searchQuery && statusFilter === 'all' && (
                     <button
                       onClick={handleCreateNewForm}
-                      className="mt-5 bg-brand hover:bg-brand-hover text-white text-xs font-bold px-4.5 py-2.5 rounded-xl transition shadow-sm cursor-pointer"
+                      className="mt-5 bg-brand hover:bg-brand-hover text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition shadow-sm cursor-pointer hover:scale-102 active:scale-98"
                     >
                       Create Your First Form
                     </button>
                   )}
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                   {filteredForms.map(form => (
                     <div
                       key={form.id}
-                      className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-250/50 dark:border-slate-800/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-305 flex flex-col justify-between overflow-hidden group"
+                      className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-205 flex flex-col justify-between overflow-hidden group"
                     >
-                      <div className="p-5 flex flex-col gap-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="bg-brand/5 text-brand dark:bg-sky-950/30 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
+                      <div className="p-5.5 flex flex-col gap-3">
+                        <div className="flex items-center justify-between select-none">
+                          <span className="bg-brand/5 text-brand dark:bg-sky-950/40 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
                             <Database size={10} />
                             <span>{form.responseCount || 0} Responses</span>
                           </span>
 
                           <div className="flex items-center gap-1.5">
                             <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                            <span className="text-[9px] font-bold uppercase text-slate-500 dark:text-slate-400">{form.status || 'draft'}</span>
+                            <span className="text-[9px] font-extrabold uppercase text-slate-500 dark:text-slate-400">{form.status || 'draft'}</span>
                           </div>
                         </div>
-                        <h3 className="text-xs font-black text-slate-800 dark:text-slate-100 group-hover:text-brand transition-colors line-clamp-1">
+                        <h3 className="text-xs font-black text-slate-855 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-sky-400 transition-colors line-clamp-1">
                           {form.title}
                         </h3>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-medium">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed font-semibold">
                           {form.description ? form.description.split('|||')[0] : 'No summary descriptions configured.'}
                         </p>
                         
-                        <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold border-t border-slate-100/60 dark:border-slate-800/40 pt-2.5 mt-1">
+                        <div className="flex items-center justify-between text-[9px] text-slate-400 font-bold border-t border-slate-100/60 dark:border-slate-800/40 pt-3 mt-1.5 select-none">
                           <span>Updated {formatFriendlyDate(form.updatedAt)}</span>
                           <span>Created {formatFriendlyDate(form.createdAt)}</span>
                         </div>
                       </div>
 
-                      <div className="bg-slate-50/50 dark:bg-brand-dark-elevated/25 px-5 py-3 border-t border-slate-100 dark:border-slate-800/50 flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
+                      <div className="bg-slate-50/50 dark:bg-slate-900/15 px-5.5 py-3 border-t border-slate-100/60 dark:border-slate-800/60 flex items-center justify-between gap-2 select-none">
+                        <div className="flex items-center gap-2">
                           <Link
-                            to={`/form/${form.id}/edit`}
-                            className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-[10px] font-bold rounded-lg cursor-pointer transition flex items-center gap-1"
+                             to={`/form/${form.id}/edit`}
+                             className="px-3.5 py-2 bg-brand hover:bg-brand-hover text-white text-[10px] font-extrabold rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-1 hover:scale-102 active:scale-98"
                           >
                             <Edit3 size={11} />
-                            <span>Edit Form</span>
+                            <span>Edit Workspace</span>
                           </Link>
                           <Link
                             to={`/form/${form.id}`}
                             target="_blank"
-                            className="p-1.5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-dark hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-505 dark:text-slate-350 rounded-lg text-xs font-bold flex items-center justify-center transition"
+                            className="p-2 border border-slate-205 dark:border-slate-800 bg-white dark:bg-[#0c1424] hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-350 rounded-lg text-xs font-bold flex items-center justify-center transition"
                             title="View Public Form"
                           >
                             <ExternalLink size={12} />
@@ -1023,7 +920,7 @@ function DashboardPage({ user, theme, setTheme }) {
 
                         <button
                           onClick={(e) => handleDeleteForm(form.id, e)}
-                          className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"
+                          className="p-2 text-slate-405 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"
                           title="Delete Form"
                         >
                           <Trash2 size={13} />
@@ -1072,6 +969,20 @@ function DashboardPage({ user, theme, setTheme }) {
           )}
 
         </main>
+
+        {/* Premium Workspace Footer */}
+        <footer className="w-[96%] max-w-[1720px] mx-auto border-t border-slate-200/50 dark:border-slate-800/50 pt-4 mt-8 pb-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-slate-400 font-extrabold select-none">
+          <div className="flex items-center gap-3">
+            <span>WORKSPACE VERSION: v1.2.4-STABLE</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
+            <span>STORAGE: 1.2 GB / 10 GB (12%)</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span>FORMS CREATED: {totalForms}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-slate-303 dark:bg-slate-700" />
+            <span>ONLINE ACTIVE EDITORS: 🟢 1 Active</span>
+          </div>
+        </footer>
       </div>
 
       {/* Global Toast */}
@@ -1080,7 +991,7 @@ function DashboardPage({ user, theme, setTheme }) {
       {/* Logout modal */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="max-w-xs w-full bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 animate-fade-in relative select-none">
+          <div className="max-w-xs w-full bg-white dark:bg-[#0c1424] border border-slate-205 dark:border-slate-800 rounded-2xl shadow-2xl p-5 animate-fade-in relative select-none">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/20 flex items-center justify-center">
                 <LogOut size={14} className="text-red-500" />
@@ -1093,13 +1004,13 @@ function DashboardPage({ user, theme, setTheme }) {
             <div className="flex gap-2">
               <button
                 onClick={handleLogout}
-                className="flex-1 py-2 bg-red-500 hover:bg-red-600 text-white text-[10px] font-bold rounded-lg transition cursor-pointer"
+                className="flex-1 py-2 bg-red-500 hover:bg-red-655 text-white text-[10px] font-bold rounded-lg transition cursor-pointer"
               >
                 Sign Out
               </button>
               <button
                 onClick={() => setShowLogoutConfirm(false)}
-                className="flex-1 py-2 border border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 text-[10px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="flex-1 py-2 border border-slate-205 dark:border-slate-800 text-slate-655 dark:text-slate-400 text-[10px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -1107,6 +1018,94 @@ function DashboardPage({ user, theme, setTheme }) {
           </div>
         </div>
       )}
+
+      {/* Global Command Palette (Linear-style) */}
+      {commandPaletteOpen && (
+        <div className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 z-50 flex items-start justify-center pt-[15vh] px-4 backdrop-blur-xs select-none">
+          <div className="max-w-lg w-full bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
+            {/* Command palette search input */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800/60 flex items-center gap-3">
+              <Search size={15} className="text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search commands, forms, templates..."
+                value={paletteQuery}
+                onChange={(e) => setPaletteQuery(e.target.value)}
+                className="w-full text-xs bg-transparent border-none text-slate-850 dark:text-slate-100 placeholder-slate-405 focus:outline-none"
+                autoFocus
+              />
+              <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded">ESC</span>
+            </div>
+            {/* Action lists */}
+            <div className="max-h-72 overflow-y-auto p-2.5 flex flex-col gap-1">
+              {filteredPaletteItems.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs">No matching actions or forms found.</div>
+              ) : (
+                filteredPaletteItems.map((item, itIdx) => (
+                  <div 
+                    key={itIdx}
+                    onClick={() => {
+                      setCommandPaletteOpen(false);
+                      setPaletteQuery('');
+                      item.action();
+                    }}
+                    className="p-2.5 hover:bg-slate-50 dark:hover:bg-slate-800/40 rounded-xl cursor-pointer transition flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-250 animate-fade-in"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      {item.icon}
+                      <span>{item.label}</span>
+                    </div>
+                    {item.shortcut && (
+                      <span className="text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{item.shortcut}</span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Help Button */}
+      <div className="fixed bottom-6 right-6 z-40 select-none font-semibold">
+        <button
+          onClick={() => setHelpMenuOpen(!helpMenuOpen)}
+          className="w-12 h-12 rounded-full bg-brand dark:bg-sky-500 hover:bg-brand-hover dark:hover:bg-sky-400 text-white shadow-xl hover:scale-105 active:scale-95 transition-all duration-205 flex items-center justify-center cursor-pointer"
+          title="Get Help & Resources"
+        >
+          {helpMenuOpen ? <X size={20} /> : <HelpCircle size={20} />}
+        </button>
+
+        {helpMenuOpen && (
+          <div className="absolute right-0 bottom-14 w-64 bg-white dark:bg-[#0c1424] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-4.5 animate-scale-in text-xs flex flex-col gap-2 text-slate-700 dark:text-slate-300">
+            <span className="text-[10px] text-slate-405 font-extrabold uppercase tracking-wide">Workspace Help Desk</span>
+            <a 
+              href="https://formstudio.io/docs"
+              target="_blank"
+              rel="noreferrer"
+              className="p-2.5 border border-slate-50 dark:border-slate-800/40 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-brand dark:hover:text-sky-400 transition"
+            >
+              Documentation Manual
+            </a>
+            <button 
+              onClick={() => { setHelpMenuOpen(false); handleSetView('help'); }}
+              className="w-full text-left p-2.5 border border-slate-50 dark:border-slate-800/40 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-brand dark:hover:text-sky-400 transition cursor-pointer"
+            >
+              Contact Support Ticket
+            </button>
+            <button 
+              onClick={() => { setHelpMenuOpen(false); triggerToast("Mock Bug Report submitted successfully to developer channels."); }}
+              className="w-full text-left p-2.5 border border-slate-50 dark:border-slate-800/40 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-brand dark:hover:text-sky-400 transition cursor-pointer"
+            >
+              Report Workspace Bug
+            </button>
+            <div className="border-t border-slate-100 dark:border-slate-800/50 mt-2 pt-2 flex items-center justify-between text-[10px] text-slate-400 select-none">
+              <span>Version</span>
+              <span className="font-extrabold">v1.2.4 (Stable)</span>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Original settings side drawer */}
       <SettingsSidebar
