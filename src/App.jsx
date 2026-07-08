@@ -2408,7 +2408,7 @@ function FormPublicPage({ theme, setTheme, user }) {
 
       {/* Mini navbar */}
       <header className="bg-white/70 dark:bg-brand-dark/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-800/50 sticky top-0 z-30 transition-colors duration-300">
-        <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between">
+        <div className="w-full md:w-[92%] lg:max-w-[760px] mx-auto px-4 md:px-6 lg:px-0 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-600 to-sky-600 flex items-center justify-center text-white font-extrabold shadow-sm">
               <ClipboardCheck size={16} />
@@ -2437,7 +2437,7 @@ function FormPublicPage({ theme, setTheme, user }) {
       </header>
 
       {/* Main Intake Content */}
-      <main className="max-w-2xl mx-auto py-10 px-6 w-full flex-1">
+      <main className="w-full md:w-[92%] lg:max-w-[760px] mx-auto py-10 px-4 md:px-6 lg:px-0 flex-1">
         <FormIntake
           formTitle={formTitle}
           formDescription={formDescription}

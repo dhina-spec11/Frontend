@@ -14,8 +14,8 @@
   --text-secondary: #64748B;
   --border: #E2E8F0;
   
-  --shadow-premium: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.03);
-  --shadow-premium-hover: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 16px -6px rgba(0, 0, 0, 0.03);
+  --shadow-premium: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-premium-hover: 0 16px 32px -4px rgba(0, 0, 0, 0.06), 0 4px 12px -2px rgba(0, 0, 0, 0.03);
 }
 
 .dark {
@@ -30,8 +30,8 @@
   --text-secondary: #94A3B8;
   --border: #1E293B;
   
-  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
-  --shadow-premium-hover: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-premium: 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.03);
+  --shadow-premium-hover: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 @theme {
@@ -294,16 +294,16 @@ input:checked+.slider:before {
 .form-banner-wrapper {
   width: 100%;
   transition: height 0.3s ease;
-  height: var(--banner-height-mobile, 140px) !important;
+  height: var(--banner-height-mobile, 160px) !important;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .form-banner-wrapper {
     height: var(--banner-height-tablet, 180px) !important;
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1200px) {
   .form-banner-wrapper {
     height: var(--banner-height-desktop, 220px) !important;
   }
