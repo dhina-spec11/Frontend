@@ -476,3 +476,58 @@ input:checked+.slider:before {
 .animate-scale-in {
   animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Deletion smooth collapse transitions */
+.form-card-transition {
+  transition: all 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 800px;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.form-card-transition.deleting {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-top-width: 0 !important;
+  border-bottom-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.95) translateY(-10px) !important;
+}
+
+.form-card-transition.restoring {
+  animation: slideBackIn 400ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideBackIn {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: scale(0.95) translateY(16px);
+  }
+  to {
+    max-height: 800px;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Undo Toast Slide Up & Fade In (250ms) */
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

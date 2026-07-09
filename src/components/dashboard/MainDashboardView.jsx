@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   PlusCircle, Copy, Download, BarChart3, Palette, FileText, Globe, ExternalLink,
@@ -63,7 +63,8 @@ const formatFriendlyDate = (dateVal) => {
 
 export default function MainDashboardView({
   allForms, filteredForms, handleCreateNewForm, handleCreateFromTemplate,
-  handleDeleteForm, loadDashboardData, user, theme, triggerToast, setActiveView
+  handleDeleteForm, loadDashboardData, user, theme, triggerToast, setActiveView,
+  deletingFormIds = {}
 }) {
   const carouselRef = useRef(null);
   const [copiedId, setCopiedId] = useState(null);
@@ -219,48 +220,51 @@ export default function MainDashboardView({
             <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-2 text-[10px] font-extrabold text-slate-400 dark:text-slate-600 uppercase tracking-widest select-none">
               <span>Form Name</span><span>Status</span><span>Responses</span><span>Last Updated</span><span>Actions</span>
             </div>
-            {filteredForms.slice(0, 8).map(form => (
-              <div key={form.id} className="bg-white dark:bg-[#0c1424] border border-slate-200/70 dark:border-slate-800/80 rounded-2xl hover:shadow-premium hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 overflow-hidden group">
-                {/* Mobile */}
-                <div className="md:hidden p-5 flex flex-col gap-4">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`inline-flex items-center gap-1.5 text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full ${form.status === 'published' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'}`} />{form.status || 'draft'}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1"><Database size={10}/>{form.responseCount || 0} responses</span>
+            {filteredForms.slice(0, 8).map(form => {
+              const deletingState = deletingFormIds[form.id] || '';
+              return (
+                <div key={form.id} className={`bg-white dark:bg-[#0c1424] border border-slate-200/70 dark:border-slate-800/80 rounded-2xl hover:shadow-premium hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 overflow-hidden group form-card-transition ${deletingState}`}>
+                  {/* Mobile */}
+                  <div className="md:hidden p-5 flex flex-col gap-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`inline-flex items-center gap-1.5 text-[9px] font-extrabold uppercase px-2.5 py-1 rounded-full ${form.status === 'published' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500' : 'bg-slate-400'}`} />{form.status || 'draft'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold flex items-center gap-1"><Database size={10}/>{form.responseCount || 0} responses</span>
+                    </div>
+                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-sky-400 transition-colors">{form.title}</h3>
+                    <p className="text-[11px] text-slate-400 flex items-center gap-1"><Clock size={10}/>{formatFriendlyDate(form.updatedAt)}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Link to={`/form/${form.id}/edit`} className="flex items-center gap-1.5 px-3 py-2 bg-brand hover:bg-brand-hover text-white text-[11px] font-bold rounded-lg transition cursor-pointer"><Edit3 size={11}/>Edit</Link>
+                      <Link to={`/form/${form.id}`} target="_blank" className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition"><Eye size={11}/>Preview</Link>
+                      <button onClick={() => handleShareForm(form.id)} className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"><Share2 size={11}/>{copiedId === form.id ? 'Copied!' : 'Share'}</button>
+                      <button onClick={(e) => handleDeleteForm(form.id, e)} className="flex items-center gap-1.5 px-3 py-2 border border-red-100 dark:border-red-950/50 text-red-500 text-[11px] font-bold rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer ml-auto"><Trash2 size={11}/>Delete</button>
+                    </div>
                   </div>
-                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-sky-400 transition-colors">{form.title}</h3>
-                  <p className="text-[11px] text-slate-400 flex items-center gap-1"><Clock size={10}/>{formatFriendlyDate(form.updatedAt)}</p>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <Link to={`/form/${form.id}/edit`} className="flex items-center gap-1.5 px-3 py-2 bg-brand hover:bg-brand-hover text-white text-[11px] font-bold rounded-lg transition cursor-pointer"><Edit3 size={11}/>Edit</Link>
-                    <Link to={`/form/${form.id}`} target="_blank" className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition"><Eye size={11}/>Preview</Link>
-                    <button onClick={() => handleShareForm(form.id)} className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"><Share2 size={11}/>{copiedId === form.id ? 'Copied!' : 'Share'}</button>
-                    <button onClick={(e) => handleDeleteForm(form.id, e)} className="flex items-center gap-1.5 px-3 py-2 border border-red-100 dark:border-red-950/50 text-red-500 text-[11px] font-bold rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer ml-auto"><Trash2 size={11}/>Delete</button>
+                  {/* Desktop */}
+                  <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-4 items-center">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-sky-400 transition-colors truncate">{form.title}</h3>
+                      <p className="text-[11px] text-slate-400 mt-0.5 truncate">{form.description ? form.description.split('|||')[0] : 'No description'}</p>
+                    </div>
+                    <div>
+                      <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full ${form.status === 'published' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}/>{form.status || 'draft'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-sm font-black text-slate-700 dark:text-slate-205"><Database size={13} className="text-slate-400"/>{form.responseCount || 0}</div>
+                    <div className="text-xs text-slate-505 dark:text-slate-400 font-medium flex items-center gap-1"><Clock size={11}/>{formatFriendlyDate(form.updatedAt)}</div>
+                    <div className="flex items-center gap-1.5">
+                      <Link to={`/form/${form.id}/edit`} title="Edit" className="w-8 h-8 flex items-center justify-center rounded-lg bg-brand hover:bg-brand-hover text-white transition cursor-pointer"><Edit3 size={13}/></Link>
+                      <Link to={`/form/${form.id}`} target="_blank" title="Preview" className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-202 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition"><Eye size={13}/></Link>
+                      <button onClick={() => handleShareForm(form.id)} title="Copy share link" className={`w-8 h-8 flex items-center justify-center rounded-lg border transition cursor-pointer ${copiedId === form.id ? 'border-emerald-202 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400' : 'border-slate-202 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>{copiedId === form.id ? <CheckCircle size={13}/> : <Share2 size={13}/>}</button>
+                      <button onClick={() => { handleCreateFromTemplate('contact'); triggerToast(`"${form.title}" duplicated.`); }} title="Duplicate" className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-202 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"><Copy size={13}/></button>
+                      <button onClick={(e) => handleDeleteForm(form.id, e)} title="Delete" className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"><Trash2 size={13}/></button>
+                    </div>
                   </div>
                 </div>
-                {/* Desktop */}
-                <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-5 py-4 items-center">
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-black text-slate-800 dark:text-slate-100 group-hover:text-brand dark:group-hover:text-sky-400 transition-colors truncate">{form.title}</h3>
-                    <p className="text-[11px] text-slate-400 mt-0.5 truncate">{form.description ? form.description.split('|||')[0] : 'No description'}</p>
-                  </div>
-                  <div>
-                    <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full ${form.status === 'published' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${form.status === 'published' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}/>{form.status || 'draft'}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-sm font-black text-slate-700 dark:text-slate-200"><Database size={13} className="text-slate-400"/>{form.responseCount || 0}</div>
-                  <div className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1"><Clock size={11}/>{formatFriendlyDate(form.updatedAt)}</div>
-                  <div className="flex items-center gap-1.5">
-                    <Link to={`/form/${form.id}/edit`} title="Edit" className="w-8 h-8 flex items-center justify-center rounded-lg bg-brand hover:bg-brand-hover text-white transition cursor-pointer"><Edit3 size={13}/></Link>
-                    <Link to={`/form/${form.id}`} target="_blank" title="Preview" className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition"><Eye size={13}/></Link>
-                    <button onClick={() => handleShareForm(form.id)} title="Copy share link" className={`w-8 h-8 flex items-center justify-center rounded-lg border transition cursor-pointer ${copiedId === form.id ? 'border-emerald-200 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-400' : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>{copiedId === form.id ? <CheckCircle size={13}/> : <Share2 size={13}/>}</button>
-                    <button onClick={() => { handleCreateFromTemplate('contact'); triggerToast(`"${form.title}" duplicated.`); }} title="Duplicate" className="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer"><Copy size={13}/></button>
-                    <button onClick={(e) => handleDeleteForm(form.id, e)} title="Delete" className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition cursor-pointer"><Trash2 size={13}/></button>
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

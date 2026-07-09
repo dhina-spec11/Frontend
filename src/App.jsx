@@ -176,6 +176,9 @@ function DashboardPage({ user, theme, setTheme }) {
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [toast, setToast] = useState({ message: '', visible: false, isError: false });
+  const deleteTimeoutRef = useRef(null);
+  const [deletingFormIds, setDeletingFormIds] = useState({});
+  const [undoToast, setUndoToast] = useState({ visible: false, formId: '', formTitle: '', formObj: null });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -406,25 +409,103 @@ function DashboardPage({ user, theme, setTheme }) {
     }
   };
 
-  const handleDeleteForm = async (formId, e) => {
-    e.stopPropagation();
-    if (confirm('Are you sure you want to move this form to Trash?')) {
-      try {
-        const formToDelete = allForms.find(f => f.id === formId);
-        if (formToDelete) {
-          const rawTrash = localStorage.getItem('formstudio_trash_forms');
-          const trash = rawTrash ? JSON.parse(rawTrash) : [];
-          trash.push(formToDelete);
+  const finalizeDeletion = async (formId, formObj) => {
+    try {
+      if (formObj) {
+        const rawTrash = localStorage.getItem('formstudio_trash_forms');
+        const trash = rawTrash ? JSON.parse(rawTrash) : [];
+        if (!trash.some(t => t.id === formId)) {
+          trash.push(formObj);
           localStorage.setItem('formstudio_trash_forms', JSON.stringify(trash));
         }
-        await deleteForm(formId);
-        triggerToast('Form moved to Trash.');
-        loadDashboardData();
-      } catch (err) {
-        console.error("Error deleting form:", err);
-        triggerToast('Failed to delete form.', true);
       }
+      await deleteForm(formId);
+      setDeletingFormIds(prev => {
+        const copy = { ...prev };
+        delete copy[formId];
+        return copy;
+      });
+    } catch (err) {
+      console.error("Error finalizing deletion:", err);
+      if (formObj) {
+        setAllForms(prev => {
+          if (!prev.some(f => f.id === formId)) {
+            return [...prev, formObj];
+          }
+          return prev;
+        });
+      }
+      setDeletingFormIds(prev => {
+        const copy = { ...prev };
+        delete copy[formId];
+        return copy;
+      });
+      triggerToast('❌ Failed to delete form. Please try again.', true);
     }
+  };
+
+  const handleUndoDelete = () => {
+    if (!undoToast.visible || !undoToast.formId) return;
+    const { formId, formObj } = undoToast;
+
+    if (deleteTimeoutRef.current) {
+      clearTimeout(deleteTimeoutRef.current);
+      deleteTimeoutRef.current = null;
+    }
+
+    setUndoToast({ visible: false, formId: '', formTitle: '', formObj: null });
+    setDeletingFormIds(prev => ({ ...prev, [formId]: 'restoring' }));
+
+    if (formObj) {
+      setAllForms(prev => {
+        if (prev.some(f => f.id === formId)) return prev;
+        return [...prev, formObj];
+      });
+    }
+
+    setTimeout(() => {
+      setDeletingFormIds(prev => {
+        const copy = { ...prev };
+        delete copy[formId];
+        return copy;
+      });
+    }, 400);
+
+    triggerToast('✅ Form restored successfully.');
+  };
+
+  const handleDeleteForm = async (formId, e) => {
+    if (e && typeof e.stopPropagation === 'function') {
+      e.stopPropagation();
+    }
+
+    const formToDelete = allForms.find(f => f.id === formId);
+    if (!formToDelete) return;
+
+    if (undoToast.visible && undoToast.formId && undoToast.formId !== formId) {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current);
+      }
+      await finalizeDeletion(undoToast.formId, undoToast.formObj);
+    }
+
+    setDeletingFormIds(prev => ({ ...prev, [formId]: 'deleting' }));
+
+    setTimeout(() => {
+      setAllForms(prev => prev.filter(f => f.id !== formId));
+    }, 400);
+
+    setUndoToast({
+      visible: true,
+      formId,
+      formTitle: formToDelete.title || 'Untitled Form',
+      formObj: formToDelete
+    });
+
+    deleteTimeoutRef.current = setTimeout(async () => {
+      setUndoToast(prev => ({ ...prev, visible: false }));
+      await finalizeDeletion(formId, formToDelete);
+    }, 8000);
   };
 
   const handleLogout = async () => {
@@ -833,6 +914,7 @@ function DashboardPage({ user, theme, setTheme }) {
                 theme={theme}
                 triggerToast={triggerToast}
                 setActiveView={handleSetView}
+                deletingFormIds={deletingFormIds}
               />
             </div>
           )}
@@ -921,11 +1003,13 @@ function DashboardPage({ user, theme, setTheme }) {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {filteredForms.map(form => (
-                    <div
-                      key={form.id}
-                      className="bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-205 flex flex-col justify-between overflow-hidden group"
-                    >
+                  {filteredForms.map(form => {
+                    const deletingState = deletingFormIds[form.id] || '';
+                    return (
+                      <div
+                        key={form.id}
+                        className={`bg-white dark:bg-[#0c1424] rounded-2xl border border-slate-200/60 dark:border-slate-800/80 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 transition-all duration-205 flex flex-col justify-between overflow-hidden group form-card-transition ${deletingState}`}
+                      >
                       <div className="p-5.5 flex flex-col gap-3">
                         <div className="flex items-center justify-between select-none">
                           <span className="bg-brand/5 text-brand dark:bg-sky-950/40 dark:text-sky-400 text-[9px] font-black px-2.5 py-1 rounded-full flex items-center gap-1.5 uppercase">
@@ -979,8 +1063,9 @@ function DashboardPage({ user, theme, setTheme }) {
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
               )}
             </div>
           )}
@@ -1039,6 +1124,24 @@ function DashboardPage({ user, theme, setTheme }) {
 
       {/* Global Toast */}
       <Toast {...toast} />
+
+      {/* Undo Toast */}
+      {undoToast.visible && (
+        <div className="fixed bottom-6 right-6 z-50 animate-slide-up-fade flex items-center justify-between gap-4 bg-[#111827] text-white text-xs px-5 py-4 rounded-[14px] shadow-2xl border border-slate-800/80 dark:border-slate-800/50 backdrop-blur-md max-w-sm w-full sm:w-auto">
+          <div className="flex items-center gap-2 select-none">
+            <span>🗑️</span>
+            <span className="font-semibold text-slate-100 truncate max-w-[180px]">
+              Form "{undoToast.formTitle}" deleted.
+            </span>
+          </div>
+          <button
+            onClick={handleUndoDelete}
+            className="px-3 py-1.5 border border-[#2563EB] text-[#2563EB] bg-transparent hover:bg-[#2563EB] hover:text-white rounded-lg font-black transition cursor-pointer"
+          >
+            Undo
+          </button>
+        </div>
+      )}
 
       {/* Logout modal */}
       {showLogoutConfirm && (
