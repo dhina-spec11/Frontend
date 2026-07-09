@@ -720,10 +720,10 @@ function DashboardPage({ user, theme, setTheme }) {
         `}
       >
         {/* Top Navbar */}
-        <header className="bg-white/85 dark:bg-[#0c1424]/85 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/80 sticky top-0 z-30 shadow-xs transition-colors duration-300">
-          <div className="w-[98%] max-w-[1920px] mx-auto px-4 py-2.5 flex items-center justify-between">
+        <header className="bg-white/90 dark:bg-[#0a1229]/90 backdrop-blur-md border-b border-[#EEF2F7] dark:border-slate-800/60 sticky top-0 z-30 transition-colors duration-300">
+          <div className="w-[98%] max-w-[1600px] mx-auto px-4 py-3 flex items-center justify-between">
+            {/* Left Section */}
             <div className="flex items-center gap-3">
-              {/* Collapsible Trigger Menu (☰) */}
               <button
                 onClick={() => {
                   if (window.innerWidth < 1024) {
@@ -732,28 +732,42 @@ function DashboardPage({ user, theme, setTheme }) {
                     handleToggleSidebar();
                   }
                 }}
-                className="p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-brand-dark-elevated/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-650 dark:text-slate-300 transition cursor-pointer"
+                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-350 transition-all duration-200 cursor-pointer"
                 aria-label="Toggle Sidebar"
               >
-                <Menu size={15} />
+                <Menu size={18} />
               </button>
               
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-sm tracking-tight text-slate-800 dark:text-slate-100">
-                  {sidebarItems.find(i => i.id === activeView)?.label || 'Dashboard'}
-                </span>
-              </div>
+              <h1 className="text-lg font-black text-slate-800 dark:text-slate-100 tracking-tight select-none">
+                {sidebarItems.find(i => i.id === activeView)?.label || 'Dashboard'}
+              </h1>
             </div>
 
+            {/* Center Section: Global Search Bar */}
+            <div className="hidden md:flex items-center flex-1 max-w-md mx-8 relative">
+              <button
+                onClick={() => setCommandPaletteOpen(true)}
+                className="w-full flex items-center justify-between px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-[#EEF2F7] dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-xl text-slate-450 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-250 transition cursor-pointer text-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <Search size={14} className="text-slate-400" />
+                  <span>Search forms, templates, responses...</span>
+                </div>
+                <kbd className="px-1.5 py-0.5 bg-white dark:bg-slate-800 border border-[#EEF2F7] dark:border-slate-750 rounded-md text-[9px] font-black text-slate-400 dark:text-slate-500 shadow-xs">
+                  Ctrl + K
+                </kbd>
+              </button>
+            </div>
+
+            {/* Right Section */}
             <div className="flex items-center gap-3">
-              {/* Quick Actions (only shown on relevant views to avoid clutter) */}
               {(activeView === 'dashboard' || activeView === 'my-forms') && (
                 <button
                   onClick={handleCreateNewForm}
-                  className="bg-brand hover:bg-brand-hover text-white text-xs font-bold px-3.5 py-2 rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm hover:scale-[1.02] cursor-pointer animate-fade-in"
+                  className="hidden sm:flex bg-[#2563EB] hover:bg-blue-700 text-white text-xs font-black px-4 py-2 rounded-xl transition duration-200 items-center gap-1.5 shadow-sm hover:scale-[1.03] active:scale-[0.98] cursor-pointer"
                 >
-                  <PlusCircle size={13} />
-                  <span className="hidden sm:inline">New Form</span>
+                  <PlusCircle size={14} />
+                  <span>New Form</span>
                 </button>
               )}
 
@@ -804,7 +818,7 @@ function DashboardPage({ user, theme, setTheme }) {
                           <div 
                             key={n.id} 
                             onClick={() => handleToggleRead(n.id)}
-                            className={`p-3.5 flex items-start gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 cursor-pointer transition-colors relative ${!n.read ? 'bg-blue-500/[0.02]' : ''}`}
+                            className={`p-3.5 flex items-start gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 cursor-pointer transition-colors relative ${!n.read ? 'bg-blue-500/5' : ''}`}
                           >
                             <div className="flex-shrink-0 mt-0.5">
                               {n.type === 'response' && (
