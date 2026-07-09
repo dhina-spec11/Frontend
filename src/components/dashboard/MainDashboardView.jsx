@@ -418,31 +418,6 @@ export default function MainDashboardView({
           </div>
         </section>
 
-        {/* D. QUICK ACTIONS */}
-        <section>
-          <SectionHeader
-            title="Quick Actions"
-            subtitle="Common developer functions and utility tabs"
-          />
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mt-5">
-            {quickActions.map((qa, i) => (
-              <button
-                key={i}
-                onClick={qa.action}
-                className={`${qa.bg} rounded-[18px] p-5 border border-transparent hover:border-[#EEF2F7] dark:hover:border-slate-750 text-left hover:shadow-sm hover:-translate-y-0.5 active:scale-[0.98] transition-all duration-200 cursor-pointer group flex flex-col justify-between h-[120px] select-none`}
-              >
-                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${qa.grad} flex items-center justify-center text-white shadow-sm`}>
-                  {qa.icon}
-                </div>
-                <div>
-                  <h3 className="text-xs font-black text-slate-800 dark:text-slate-100">{qa.title}</h3>
-                  <p className="text-[10px] text-slate-405 dark:text-slate-500 font-bold leading-normal mt-0.5">{qa.desc}</p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-
         {/* E. TEMPLATES GALLERY */}
         <section>
           <div className="flex items-end justify-between mb-5">
@@ -516,37 +491,6 @@ export default function MainDashboardView({
           RIGHT INSIGHTS PANEL (3 Columns on Desktop, Stacks Below on Tablet/Mobile)
       ═══════════════════════════════════════════════════════════════════════════ */}
       <div className="col-span-12 lg:col-span-4 xl:col-span-3 flex flex-col gap-6 lg:sticky lg:top-24 h-fit">
-
-        {/* 1. WORKSPACE HEALTH */}
-        <section className="bg-white dark:bg-[#0c1424] border border-[#EEF2F7] dark:border-slate-800/80 rounded-[18px] p-5 shadow-xs flex flex-col gap-4">
-          <div className="flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800/50">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-emerald-500 flex items-center justify-center"><ShieldCheck size={16} /></div>
-            <div>
-              <h2 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider leading-none">Workspace Health</h2>
-              <span className="text-[9px] text-emerald-500 font-bold block mt-1.5">All services operational</span>
-            </div>
-          </div>
-          <div className="space-y-3.5">
-            <div>
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 select-none">
-                <span>Deliverability Rate</span>
-                <span>99.8%</span>
-              </div>
-              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden select-none">
-                <div className="w-[99.8%] h-full bg-emerald-500 rounded-full" />
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1 select-none">
-                <span>Database Storage</span>
-                <span>1.2 GB / 10 GB (12%)</span>
-              </div>
-              <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden select-none">
-                <div className="w-[12%] h-full bg-[#2563EB] rounded-full" />
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* 2. AI WORKSPACE ASSISTANT */}
         <section className="bg-white dark:bg-[#0c1424] border border-[#EEF2F7] dark:border-slate-800/80 rounded-[18px] p-5 shadow-xs flex flex-col gap-4">
