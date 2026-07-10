@@ -258,15 +258,18 @@ export const logOutUser = async () => {
 export const subscribeToAuth = (callback) => {
   let firebaseUser = null;
   let mockUser = null;
+  let firebaseLoaded = !auth;
 
   const notify = () => {
-    // Prioritize mock user if logged in, otherwise use firebase user
-    callback(mockUser || firebaseUser);
+    if (firebaseLoaded) {
+      callback(mockUser || firebaseUser);
+    }
   };
 
   const unsubscribeFirebase = auth
     ? onAuthStateChanged(auth, (user) => {
         firebaseUser = user;
+        firebaseLoaded = true;
         notify();
       })
     : () => {};
@@ -280,6 +283,9 @@ export const subscribeToAuth = (callback) => {
   // Get initial mock state
   const raw = localStorage.getItem('mock_firebase_current_user');
   mockUser = raw ? JSON.parse(raw) : null;
+  if (mockUser) {
+    firebaseLoaded = true;
+  }
   notify();
 
   window.addEventListener('storage', handleMockChange);
