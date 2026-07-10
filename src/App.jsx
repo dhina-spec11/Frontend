@@ -412,11 +412,12 @@ function DashboardPage({ user, theme, setTheme }) {
   const finalizeDeletion = async (formId, formObj) => {
     try {
       if (formObj) {
-        const rawTrash = localStorage.getItem('formstudio_trash_forms');
+        const trashKey = `formstudio_trash_forms_${user?.uid || 'guest'}`;
+        const rawTrash = localStorage.getItem(trashKey);
         const trash = rawTrash ? JSON.parse(rawTrash) : [];
         if (!trash.some(t => t.id === formId)) {
           trash.push(formObj);
-          localStorage.setItem('formstudio_trash_forms', JSON.stringify(trash));
+          localStorage.setItem(trashKey, JSON.stringify(trash));
         }
       }
       await deleteForm(formId);
@@ -1111,12 +1112,12 @@ function DashboardPage({ user, theme, setTheme }) {
 
           {/* H. Trash Sub-view */}
           {activeView === 'trash' && (
-            <TrashView onReloadCatalog={loadDashboardData} />
+            <TrashView user={user} onReloadCatalog={loadDashboardData} />
           )}
 
           {/* I. Help & Support Sub-view */}
           {activeView === 'help' && (
-            <HelpView />
+            <HelpView user={user} />
           )}
 
         </main>

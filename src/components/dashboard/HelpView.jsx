@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   HelpCircle, MessageSquare, BookOpen, Send, Check, ShieldCheck 
 } from 'lucide-react';
+import { submitSupportTicket } from '../../firebase';
 
 const FAQS = [
   { q: "How do I share a form with my team?", a: "Open the form in the editor, click the Share button on the top-right, and enter your team member's email address to add them as a collaborator." },
@@ -9,18 +10,33 @@ const FAQS = [
   { q: "Can I collect file uploads from users?", a: "Yes, you can drag and drop a 'File Upload' field into your form builder to securely accept attachments from submitters." }
 ];
 
-export default function HelpView() {
-  const [email, setEmail] = useState('');
+export default function HelpView({ user }) {
+  const [email, setEmail] = useState(user?.email || '');
   const [msg, setMsg] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email || !msg) return;
-    setSubmitted(true);
-    setEmail('');
-    setMsg('');
-    setTimeout(() => setSubmitted(false), 3000);
+    if (!email || !msg || submitting) return;
+    setSubmitting(true);
+    try {
+      await submitSupportTicket(email, msg);
+      setSubmitted(true);
+      setMsg('');
+      setTimeout(() => setSubmitted(false), 4000);
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to submit ticket. Please check your network and try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -87,10 +103,17 @@ export default function HelpView() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-sky-500 to-brand hover:from-sky-600 hover:to-brand-hover text-white py-2.5 rounded-xl text-xs font-bold transition duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-sky-500 to-brand hover:from-sky-600 hover:to-brand-hover text-white py-2.5 rounded-xl text-xs font-bold transition duration-200 flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {submitted ? <Check size={13} /> : <Send size={13} />}
-              <span>{submitted ? 'Ticket Submitted!' : 'Send Support Ticket'}</span>
+              {submitting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : submitted ? (
+                <Check size={13} />
+              ) : (
+                <Send size={13} />
+              )}
+              <span>{submitting ? 'Sending...' : submitted ? 'Ticket Submitted!' : 'Send Support Ticket'}</span>
             </button>
           </form>
         </div>

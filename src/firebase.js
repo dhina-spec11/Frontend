@@ -231,6 +231,19 @@ export const changePassword = async (email, passwordOld, passwordNew) => {
   return data;
 };
 
+export const submitSupportTicket = async (email, message) => {
+  const res = await fetch(`${API_URL}/support/tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, message })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to submit support ticket.');
+  }
+  return data;
+};
+
 export const logOutUser = async () => {
   if (auth) {
     try {

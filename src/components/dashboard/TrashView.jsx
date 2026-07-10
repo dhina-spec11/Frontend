@@ -4,18 +4,20 @@ import {
 } from 'lucide-react';
 import { saveForm } from '../../firebase';
 
-export default function TrashView({ onReloadCatalog }) {
+export default function TrashView({ user, onReloadCatalog }) {
   const [trashForms, setTrashForms] = useState([]);
   const [toastMsg, setToastMsg] = useState('');
 
+  const getTrashKey = () => `formstudio_trash_forms_${user?.uid || 'guest'}`;
+
   const loadTrash = () => {
-    const raw = localStorage.getItem('formstudio_trash_forms');
+    const raw = localStorage.getItem(getTrashKey());
     setTrashForms(raw ? JSON.parse(raw) : []);
   };
 
   useEffect(() => {
     loadTrash();
-  }, []);
+  }, [user]);
 
   const triggerToast = (msg) => {
     setToastMsg(msg);
@@ -30,7 +32,7 @@ export default function TrashView({ onReloadCatalog }) {
       
       // Remove from localStorage trash
       const updatedTrash = trashForms.filter(t => t.id !== form.id);
-      localStorage.setItem('formstudio_trash_forms', JSON.stringify(updatedTrash));
+      localStorage.setItem(getTrashKey(), JSON.stringify(updatedTrash));
       setTrashForms(updatedTrash);
       
       triggerToast(`Restored "${form.title}" back to active forms.`);
@@ -45,7 +47,7 @@ export default function TrashView({ onReloadCatalog }) {
     e.stopPropagation();
     if (confirm(`Are you sure you want to permanently delete "${title}"? This cannot be undone.`)) {
       const updatedTrash = trashForms.filter(t => t.id !== formId);
-      localStorage.setItem('formstudio_trash_forms', JSON.stringify(updatedTrash));
+      localStorage.setItem(getTrashKey(), JSON.stringify(updatedTrash));
       setTrashForms(updatedTrash);
       triggerToast(`Permanently deleted "${title}".`);
     }
@@ -53,7 +55,7 @@ export default function TrashView({ onReloadCatalog }) {
 
   const handleEmptyTrash = () => {
     if (confirm("Are you sure you want to empty the trash? All forms in trash will be permanently lost.")) {
-      localStorage.removeItem('formstudio_trash_forms');
+      localStorage.removeItem(getTrashKey());
       setTrashForms([]);
       triggerToast("Trash emptied.");
     }
