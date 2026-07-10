@@ -218,6 +218,19 @@ export const signUpUser = async (email, password) => {
   return mockAuth.signUp(email, password);
 };
 
+export const changePassword = async (email, passwordOld, passwordNew) => {
+  const res = await fetch(`${API_URL}/auth/change-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, passwordOld, passwordNew })
+  });
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || 'Failed to update password.');
+  }
+  return data;
+};
+
 export const logOutUser = async () => {
   if (auth) {
     try {

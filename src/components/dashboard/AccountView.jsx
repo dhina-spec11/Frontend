@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   User, Key, AlertTriangle, Link, LogOut, Check, Save 
 } from 'lucide-react';
+import { changePassword } from '../../firebase';
 
 const AVATARS = [
   '👩‍💻', '👨‍💻', '🦊', '🚀', '🎨', '💼', '🥑', '👾'
@@ -29,12 +30,27 @@ export default function AccountView({ user, onLogout }) {
     setTimeout(() => setIsSaved(false), 2000);
   };
 
-  const handleResetPassword = (e) => {
+  const [pwLoading, setPwLoading] = useState(false);
+
+  const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!passwordOld || !passwordNew) return;
-    alert("Mock password successfully updated!");
-    setPasswordOld('');
-    setPasswordNew('');
+    if (passwordNew.length < 6) {
+      alert("New password must be at least 6 characters.");
+      return;
+    }
+    setPwLoading(true);
+    try {
+      await changePassword(user.email, passwordOld, passwordNew);
+      alert("Password successfully updated!");
+      setPasswordOld('');
+      setPasswordNew('');
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Failed to update password.");
+    } finally {
+      setPwLoading(false);
+    }
   };
 
   return (
@@ -147,10 +163,11 @@ export default function AccountView({ user, onLogout }) {
             
             <button
               type="submit"
-              disabled={!passwordOld || !passwordNew}
-              className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-[10px] font-bold px-3 py-2 rounded-lg transition duration-200 self-start disabled:opacity-50 cursor-pointer"
+              disabled={!passwordOld || !passwordNew || pwLoading}
+              className="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-[10px] font-bold px-3 py-2 rounded-lg transition duration-200 self-start disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
             >
-              Update Password
+              {pwLoading && <div className="w-3 h-3 border-2 border-slate-700 dark:border-slate-300 border-t-transparent rounded-full animate-spin" />}
+              <span>{pwLoading ? 'Updating...' : 'Update Password'}</span>
             </button>
           </form>
         </div>

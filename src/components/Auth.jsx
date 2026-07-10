@@ -21,12 +21,13 @@ export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const switchMode = (val) => { setIsLogin(val); setError(''); };
+  const switchMode = (val) => { setIsLogin(val); setError(''); setFullName(''); };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +42,11 @@ export default function Auth() {
         await logInUser(email, password);
       } else {
         await signUpUser(email, password);
+        if (fullName.trim()) {
+          localStorage.setItem('fs_account_name', fullName.trim());
+          localStorage.setItem('fs_account_avatar', '👩‍💻');
+          window.dispatchEvent(new Event('fs_profile_update'));
+        }
       }
       navigate('/');
     } catch (err) {
@@ -185,6 +191,27 @@ export default function Auth() {
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                {/* Full Name — signup only */}
+                {!isLogin && (
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-extrabold text-slate-400 dark:text-slate-505 uppercase tracking-widest">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="auth-fullname"
+                        type="text"
+                        required
+                        value={fullName}
+                        onChange={e => { setFullName(e.target.value); setError(''); }}
+                        placeholder="e.g. Jane Doe"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-brand-dark-elevated/60 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-brand dark:focus:border-sky-400 focus:bg-white dark:focus:bg-brand-dark-elevated transition"
+                      />
+                      <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    </div>
+                  </div>
+                )}
+
                 {/* Email */}
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
